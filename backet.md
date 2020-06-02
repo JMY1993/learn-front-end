@@ -126,4 +126,213 @@ undefined + 1;  //NaN
 
 # if (…) 语句会计算圆括号内的表达式，并将计算结果转换为布尔型。
 相当于对括号内返回值执行`Boolean()`
-数字 0、空字符串 ""、null、undefined 和 NaN 都会被转换成 false。因为他们被称为 “falsy” 值
+数字 0、空字符串 ""、null、undefined 和 NaN 都会被转换成 false。因为他们被称为 “falsy” 值。
+
+# 逻辑运算符
+|| ：返回为真值的操作数
+&& ：返回为假值的操作数
+!  ：布尔非运算
+
+- 短路计算
+  - `a || b || c || d`
+  返回第一个真值，如果都是假，返回最后一个值
+  - `a && b && c && d`
+  返回第一个假值，如果都是真，返回最后一个值
+
+- 代替if
+  - `(predicate) || exp`;
+  predicate为假，执行exp；
+  - `(predicate) && exp`;
+  predicate为真，执行exp；
+
+- 转换Boolean值
+  `!!value` 相当于 `Boolean(value)`
+
+  !!! 这里一起记忆一下`+value`转换为数字的用法
+
+- 几个例子
+  ```js
+  console.log(console.log(1) || 2 || console.log(3)) //控制台先打印出1，然后是2
+  //console.log()返回值是undefined，是一个falsy值，所以会进一步向后取之，取到2后停止
+  ```
+    [使用prompt的登陆验证](https://zh.javascript.info/task/check-login)
+  ```js
+  //使用prompt进行登陆校验
+  'use strict'
+   function loginCheck(){
+    let userName = prompt("Enter your user name please:");
+    if (!userName){
+        alert("Canceled!");
+        return 0;
+    } else if (!(userName === "Admin")) {
+        alert("I don't know you");
+        return 0;
+    }
+
+    let passwd = prompt("Enter your password please:");
+    
+    if (!passwd){
+        alert("Canceled!");
+        return 0;
+    } else if (!(passwd == "TheMaster")) {
+        alert("Wrong password");
+        return 0;
+    }
+
+    alert("Welcome!");
+   return 0;
+   }
+
+# 控制结构
+- break
+- continue
+## label: break或continue后面如果接标签，标签必须在语句之上定义。
+## switch: 比较switch和case的value是否*严格相等*
+  + 注意`defaut`的使用
+  + 注意每个case的`break`，没有break就会继续执行下一个case
+
+- 一个例子
+[输出素数（prime）](https://zh.javascript.info/task/list-primes)
+```js
+function isPrime(n) {
+    for (let divider = 2 ; divider < n ; divider++) {
+        if (n%divider === 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function listPrime(n) {
+    for (let prime = 2 ; prime <= n ; prime++) {
+        if (isPrime(prime)) {
+            console.log(`Found ${prime}!`);
+        }
+    }
+    return 0;
+}
+```
+
+# 函数与函数表达式
+## 语法区别
+  函数的花括号后面不需要`;`
+  函数表达式的花括号后面需要`;`
+## 可见性区别
+  *严格模式下*，当一个函数声明在一个代码块内时，它在该代码块内的任何位置都是可见的。但在代码块外不可见。
+  如果把函数表达式赋值给一个在代码块外声明的变量时，可以在代码块外调用
+
+  注意这里说的代码块是花括号的范围，不是*作用域*的概念。
+
+  例子：
+  ```js
+  let age = prompt("What is your age?", 18);
+
+  // 有条件地声明一个函数
+  if (age < 18) {
+
+    function welcome() {
+      alert("Hello!");
+    }
+
+  } else {
+
+    function welcome() {
+      alert("Greetings!");
+    }
+
+  }
+
+  // ……稍后使用
+  welcome(); // Error: welcome is not defined
+  ```
+  而
+  ```js
+  let age = 16; // 拿 16 作为例子
+
+  if (age < 18) {
+    welcome();               // \   (运行)
+                            //  |
+    function welcome() {     //  |
+      alert("Hello!");       //  |  函数声明在声明它的代码块内任意位置都可用
+    }                        //  |
+                            //  |
+    welcome();               // /   (运行)
+
+  } else {
+
+    function welcome() {
+      alert("Greetings!");
+    }
+  }
+
+  // 在这里，我们在花括号外部调用函数，我们看不到它们内部的函数声明。
+
+
+  welcome(); // Error: welcome is not defined
+  ```
+
+# 对象的键
+## `[key]` 的形式用来表示中间有空格的键名和变量名键名
+## 计算属性->对象字面量中使用方括号
+  ```js
+  let fruit = prompt("Which fruit to buy?", "apple");
+
+  let bag = {
+    [fruit]: 5, // 属性名是从 fruit 变量中得到的
+  };
+
+  alert( bag.apple ); // 5 如果 fruit="apple"
+  ```
+## 属性值的简写
+  ```js
+  function makeUser(name, age) {
+    return {
+      name, // 与 name: name 相同
+      age,  // 与 age: age 相同
+      // ...
+    };
+  }
+  //也可以与正常键值对的方式混用
+  let user = {
+    name,  // 与 name:name 相同
+    age: 30
+  };  
+  ```
+## in操作符左边是属性名（通常是一个带引号的字符串）
+## 检测对象是否含有某个字符串
+- `obj.key === undefined`
+- `key in obj`
+
+第一种方法存在检测不到的情况，如下例：
+```js
+let obj = {
+  test: undefined
+};
+
+alert( obj.test ); // 显示 undefined，所以属性不存在？
+
+alert( "test" in obj ); // true，属性存在！
+```
+# for...in 循环，*整数属性*会被进行排序，其他属性则按照创建的顺序显示
+这里的“整数属性”指的是一个可以在不作任何更改的情况下转换为整数的字符串（包括整数到整数）。
+也就是说，对于key，有Number(key) = key = String( Number(key) )。
+比如，如果有obj["+49"]，key是"+49"。Number(key)=49，加号没有了，不是整数属性。
+比如，如果有obj["1.2"]，1.2不是整数。
+
+# 对象的相等判断，全等===和非全等==没有区别。只有在两个变量引用指向*同一个对象*时，才相等。
+# 对象的浅拷贝Object.assign(obj, [src1, src1, src1, ...])，所有的src的属性都拷贝给obj，键名重复的，后面的会覆盖前面的
+# 对象深拷贝，lodash库，`_.cloneDeep(obj)`
+## 深拷贝算法
+# 检查空对象
+[检查空对象](https://zh.javascript.info/task/is-empty)
+```js
+function isEmpty(obj) {
+  for (let key in obj){
+    return false;
+  }
+  return true;
+}
+
+# JS垃圾回收（GC）的原理 （描述其原理）
+从根开始遍历所有根变量的引用再标记这些被引用的变量，再遍历这些标记的变量，直到所有可达（reachable）的引用都被标记。
+标记完成后，删除所有未被标记的变量。
