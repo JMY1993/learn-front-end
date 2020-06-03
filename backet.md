@@ -322,7 +322,7 @@ alert( "test" in obj ); // true，属性存在！
 # 对象的相等判断，全等===和非全等==没有区别。只有在两个变量引用指向*同一个对象*时，才相等。
 # 对象的浅拷贝Object.assign(obj, [src1, src1, src1, ...])，所有的src的属性都拷贝给obj，键名重复的，后面的会覆盖前面的
 # 对象深拷贝，lodash库，`_.cloneDeep(obj)`
-## 深拷贝算法
+## 深拷贝算法 //：TODO
 # 检查空对象
 [检查空对象](https://zh.javascript.info/task/is-empty)
 ```js
@@ -332,7 +332,170 @@ function isEmpty(obj) {
   }
   return true;
 }
-
+```
 # JS垃圾回收（GC）的原理 （描述其原理）
 从根开始遍历所有根变量的引用再标记这些被引用的变量，再遍历这些标记的变量，直到所有可达（reachable）的引用都被标记。
 标记完成后，删除所有未被标记的变量。
+
+# Symbol类型
+## let id = Symbol("id") // 没有new，Symbol的参数是一个字符串
+## Symbol类型不会被自动转换为字符串
+## 显示一个Symbol：`alert ( id.toString() )`=> Symbol(id)
+## 显示一个Symbol描述：`alert (id.description)`=>"id"，返回值是一个string
+## for...in循环会跳过Symbol类型的键值对，但Object.assign会复制Symbol类型的键值对
+
+# 全局Symbol注册表
+## Symbol.for()
+## Symbol.keyFor()
+## 与Symbol的不同：
+- Symbol 总是不同的值，即使它们有相同的名字。
+- 如果我们希望同名的 Symbol 相等，那么我们应该使用全局注册表
+  + `Symbol.for(key)` 返回（如果需要的话则创建）一个以 key 作为名字的全局 Symbol。
+  + 使用 Symbol.for 多次调用 key 相同的 Symbol 时，返回的就是同一个 Symbol。
+
+# 系统Symbol
+  ```js
+  Symbol.hasInstance
+  Symbol.isConcatSpreadable
+  Symbol.iterator
+  Symbol.toPrimitive
+  ```
+# 获取Symbol的方法
+## Object.getOwnPropertySymbols(obj)
+## Reflect.ownKeys(obj)
+## Symbol类型的属性不是百分百隐藏的
+
+# 失去this的原因
+## 原理
+`.`或`[]`的方式调用方法时，会返回一个特殊的引用类型的值：`(base, name, strict)`
+- base 是对象
+- name 是属性名
+- strict是是否为`use strict`模式
+这个过程确定了函数体代码和this。这个引用类型的值仅在方法调用时使用，其它的赋值等操作等都会丢失这个值。
+
+如果将这个引用类型作为右值赋值给其它变量，这个引用类型的值会被整体丢弃，只把函数引用赋值给了新的变量，这个时候对新的变量执行函数就会失去this。因为this根本没有传过来
+## 一个例子：复杂运算失去this
+```js
+let user = {
+  name: "Jesse",
+  sayName(){
+    console.log(this.name);
+  }
+}
+
+user.sayName(); //"Jesse"
+
+let sayName = user.sayName();
+sayName(); // 空白，因为this指向undefined
+
+(false||user.sayName)(); // 空白。因为或操作符查找第一个真值并返回，返回后的sayName丢失了特殊引用类型，this指向undefined
+
+(user.sayName)(); //"Jesse"。因为第一对括号可有可无，这里是设定计算顺序的，没有返回值的这个环节。
+// 与上一个例子的区别
+(false||user.sayName)(); //user.sayName返回一个引用类型，这个引用类型参与了`||`计算，这里丢失了引用类型
+(user.sayName)(); //user.sayName返回了一个引用类型，这个引用类型随后被调用，所以没有丢失引用类型。
+```
+
+## 另一个例子：对象字面量中使用this
+```js
+let outerObj = {
+  name: "outer",
+  makeInner() {
+    return {
+      name: "inner",
+      ref: this
+    }
+  }
+}
+outerObj.makeInner().ref.name; //"outer"
+outerObj.makeInner().name; //"inner"
+```
+# 链式调用的实现：每次调用后返回这个对象的自身
+```js
+let ladder = {
+  step: 0,
+  up() {
+    this.step++;
+    return this;
+  },
+  down() {
+    this.step--;
+    return this;
+  },
+  showStep() {
+    alert( this.step );
+    return this;
+  }
+}
+
+ladder.up().up().down().up().down().showStep(); // 1
+```
+
+# 对象转换
+## 所有对象在布尔上下文中均为`true`
+## 数值转换发生在对象相减或应用数学函数时（对象相加不是）
+## 字符串转换通常发生在`alert(obj)`这样一个输出对象或类似的上下文中
+## 对象转换的hint
+### "string"
+    ```js
+    // 输出
+    alert(obj);
+
+    // 将对象作为属性键
+    anotherObj[obj] = 123;
+    ```
+### "number"
+    ```js
+    // 显式转换
+    let num = Number(obj);
+
+    // 数学运算（除了二进制加法）
+    let n = +obj; // 一元加法
+    let delta = date1 - date2;
+
+    // 小于/大于的比较
+    let greater = user1 > user2;
+    ```
+### "default"
+- 二元加法
+- 如果对象被用于与*字符串*、*数字*或 *symbol* 进行 == 比较（非全等），这时到底应该进行哪种转换也不是很明确，因此使用 "default" hint
+
+    ```js
+    // 二元加法使用默认 hint
+    let total = obj1 + obj2;
+
+    // obj == number 使用默认 hint
+    if (user == 1) { ... };
+    ```
+# 对象转换的原理
+## 调用转换顺序
+1. 调用 obj[Symbol.toPrimitive](hint) — 带有 symbol 键 Symbol.toPrimitive（系统 symbol）的方法，如果这个方法存在的话
+2. 否则，如果 hint 是 "string" — 尝试 obj.toString() 和 obj.valueOf()，无论哪个存在。
+3. 否则，如果 hint 是 "number" 或 "default" — 尝试 obj.valueOf() 和 obj.toString()，无论哪个存在。
+### 一个定义obj[Symbol.toPrimitive](hint)方法的例子
+    ```js
+    let user = {
+      name: "John",
+      money: 1000,
+
+      [Symbol.toPrimitive](hint) {
+        alert(`hint: ${hint}`);
+        return hint == "string" ? `{name: "${this.name}"}` : this.money;
+      }
+    };
+
+    // 转换演示：
+    alert(user); // hint: string -> {name: "John"}
+    alert(+user); // hint: number -> 1000
+    alert(user + 500); // hint: default -> 1500
+    ```
+## 对象转换的返回值不一定会返回其`hint`的原始值，只要返回值不是对象就行
+# 构造函数、new关键字及构造函数的return
+## new关键字调用了构造函数时，发生了什么？
+  1. 一个新的空对象被创建并分配给 this。
+  2. 函数体执行。通常它会修改 this，为其添加新的属性。
+  3. 返回 this 的值。
+## 构造器模式测试：new.target。返回一个布尔值，测试函数是否为new调用
+## 构造函数的return
+  1. 如果 return 返回的是一个对象，则返回这个对象，而不是 this。
+  2. 如果 return 返回的是一个原始类型，则忽略。
