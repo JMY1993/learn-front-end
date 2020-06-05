@@ -1,0 +1,1034 @@
+* null undefined 区别
+  :PROPERTIES:
+  :CUSTOM_ID: null-undefined-区别
+  :END:
+
+null 特殊的 null 值不属于上述任何一种类型,
+它构成了一个独立的类型，只包含 null 值
+
+undefined 特殊值 undefined 和 null 一样自成类型。undefined 的含义是
+未被赋值。如果一个变量已被声明，但未被赋值，那么它的值就是 undefined #
+如果想要获得一些关于浏览器和其他引擎的兼容性信息，请看：
+
+- http://caniuse.com ------ 每个功能都列有一个支持信息表格
+  例如想看哪个引擎支持现代加密（cryptography）函数：http://caniuse.com/#feat=cryptography。
+- https://kangax.github.io/compat-table ------
+  一份列有语言功能以及引擎是否支持这些功能的表格。
+
+* typeof操作符
+  :PROPERTIES:
+  :CUSTOM_ID: typeof操作符
+  :END:
+
+typeof xx typeof(xx)
+
+1. typeof null 的结果是 "object"。这其实是不对的。官方也承认了这是
+   typeof 运算符的问题，现在只是为了兼容性而保留了下来。当然，null
+   不是一个 object。null 有自己的类型，它是一个特殊值。再次强调，这是
+   JavaScript 语言的一个错误。
+2. typeof alert 的结果是 "function"，因为 alert 在 JavaScript
+   语言中是一个函数。我们会在下一章学习函数，那时我们会了解到，在
+   JavaScript 语言中没有一个特别的 "function" 类型。函数隶属于 object
+   类型。但是 typeof 会对函数区分对待。
+   这不是很正确的做法，但在实际编程中非常方便。
+
+* 类型转换
+  :PROPERTIES:
+  :CUSTOM_ID: 类型转换
+  :END:
+
+- String()
+- Number()
+
+undefined: NaN //!!! 
+null: 0 
+true or false: 1 or 0 
+string: 去掉首尾空格后的纯数字字符串中含有的数字。
+如果剩余字符串为空，则转换结果为0。
+否则，将会从剩余字符串中"读取"数字。当类型转换出现 error 时返回NaN。
+
+#+BEGIN_SRC js
+  alert(
+  #+begin_quote
+  #+end_quote
+ Number("   123   ") ); // 123
+  alert( Number("123z") );      // NaN（从字符串“读取”数字，读到 "z" 时出现错误）
+  alert( Number("1 03") );      // NaN
+  alert( Number(true) );        // 1
+  alert( Number(false) );       // 0
+#+END_SRC
+
+- Boolean() 0, null, undefined, NaN, "" => false 其它都是true
+
+#+BEGIN_SRC js
+  console.log(Boolean("0")," ",Boolean(" ")) //true true !!!
+  //因为“ ”和“0”都是非空字符串
+#+END_SRC
+
+** 将数字转换为任意进制的字符串,number.toString(base)
+* 运算符和运算元
+  :PROPERTIES:
+  :CUSTOM_ID: 运算符和运算元
+  :END:
+
+- 二元运算符 "+" 和其它
+
+  - 二元"+" 可以做加法，也可以连接字符串
+
+    #+BEGIN_SRC js
+      1+1;   //2
+      1+"1"; //"11"
+      "1"+1; //"11" !!!字符串+数字会把数字转换为字符串，然后进行字符串连接
+      1+1+"1"//"21" !!!js是从左到右运算的，所以会先计算 `1+1 //2`，然后计算`2+"1"//"21"`
+    #+END_SRC
+
+  - 二元"-"及其它二元运算符会把非数字运算符转化为数字
+
+    #+BEGIN_SRC js
+      2-"1"; //1
+    #+END_SRC
+
+  - 一元运算符"+"及数字转化 相当于调用了=Number()=
+
+    #+BEGIN_SRC js
+      +"21"; //21
+      //要计算“21“+”21“的算数值
+      +"21" + +"21"; // 42
+    #+END_SRC
+
+- 幂运算 **
+
+  #+BEGIN_SRC js
+    2**3; //8
+  #+END_SRC
+
+- 几个例子
+
+#+BEGIN_SRC js
+  "" + 1 + 0;     //"10"
+  "" - 1 + 0;     //-1
+  true + false;   //1
+  6 / "3";        //2
+  "2" * "3";      //6
+  4 + 5 + "px";   //"9px"
+  "$" + 4 + 5;    //"$45"
+  "4" - 2;        //2
+  "4px" - 2;      //NaN
+  7 / 0;          //Infinity
+  "  -9  " + 5;   //" -9 5"
+  "  -9  " - 5;   //-14
+  null + 1;       //1
+  undefined + 1;  //NaN
+  " \t \n" - 2;   //NaN !!!字符串转换为数字时，会忽略字符串的首尾处的空格字符。在这里，整个字符串由空格字符组成，包括 \t、\n 以及它们之间的“常规”空格。因此，类似于空字符串，所以会变为 0
+#+END_SRC
+
+* 值的比较
+  :PROPERTIES:
+  :CUSTOM_ID: 值的比较
+  :END:
+
+** 字符串比较
+   :PROPERTIES:
+   :CUSTOM_ID: 字符串比较
+   :END:
+
+在比较字符串的大小时，JavaScript 会使用Unicode 编码顺序进行判定。
+因此小写字母永远>大写字母。
+
+- 首先比较两个字符串的首位字符大小。
+- 如果一方字符较大（或较小），则该字符串大于（或小于）另一个字符串。算法结束。
+- 否则，如果两个字符串的首位字符相等，则继续取出两个字符串各自的后一位字符进行比较。
+- 重复上述步骤进行比较，直到比较完成某字符串的所有字符为止。
+- 如果两个字符串的字符同时用完，那么则判定它们相等，否则未结束（还有未比较的字符）的字符串更大。
+
+** 当对/不同类型/的值进行比较时，JavaScript
+会首先将其转化为数字（number）再判定大小
+   :PROPERTIES:
+   :CUSTOM_ID: 当对不同类型的值进行比较时javascript-会首先将其转化为数字number再判定大小
+   :END:
+
+相当于运行了Number()
+
+** 对null和undefined比较
+   :PROPERTIES:
+   :CUSTOM_ID: 对null和undefined比较
+   :END:
+
+- null == undefined true
+
+- null === undefined false
+
+- 与0的比较
+
+  #+BEGIN_SRC js
+    alert( null > 0 );  // false
+    alert( null == 0 ); // false
+    alert( null >= 0 ); // true
+
+    //因为相等性检查 == 和普通比较符 > < >= <= 的代码逻辑是相互独立的。进行值的比较时，null 会被转化为数字，因此它被转化为了 0。这就是为什么（3）中 null >= 0 返回值是 true，（1）中 null > 0 返回值是 false。
+    //另一方面，undefined 和 null 在相等性检查 == 中不会进行任何的类型转换，它们有自己独立的比较规则，所以除了它们之间互等外，不会等于任何其他的值。这就解释了为什么（2）中 null == 0 会返回 false。
+
+    //undefined 不应该被与其他值进行比较：
+    alert( undefined > 0 ); // false，undefined被转换成了NaN
+    alert( undefined < 0 ); // false，同上
+    alert( undefined == 0 ); // false: undefined==null，只与null非全等
+  #+END_SRC
+
+- 规避值的比较可能产生的错误
+
+  - 除了严格相等 === 外，其他凡是有 undefined/null
+    参与的比较，我们都需要额外小心。
+  - 除非你非常清楚自己在做什么，否则永远不要使用 >= > < <=
+    去比较一个可能为 null/undefined 的变量。
+  - 对于取值可能是 null/undefined
+    的变量，请按需要/分别检查它的取值情况/。
+
+* if (...) 语句会计算圆括号内的表达式，并将计算结果转换为布尔型。
+  :PROPERTIES:
+  :CUSTOM_ID: if-语句会计算圆括号内的表达式并将计算结果转换为布尔型
+  :END:
+
+相当于对括号内返回值执行=Boolean()= 数字 0、空字符串 ""、null、undefined
+和 NaN 都会被转换成 false。因为他们被称为 “falsy" 值。
+
+* 逻辑运算符
+  :PROPERTIES:
+  :CUSTOM_ID: 逻辑运算符
+  :END:
+
+|| ：返回为真值的操作数 && ：返回为假值的操作数 ! ：布尔非运算
+
+- 短路计算
+
+  - =a || b || c || d= 返回第一个真值，如果都是假，返回最后一个值
+  - =a && b && c && d= 返回第一个假值，如果都是真，返回最后一个值
+
+- 代替if
+
+  - =(predicate) || exp=; predicate为假，执行exp；
+  - =(predicate) && exp=; predicate为真，执行exp；
+
+- 转换Boolean值 =!!value= 相当于 =Boolean(value)=
+
+  !!! 这里一起记忆一下=+value=转换为数字的用法
+
+- 几个例子
+
+  #+BEGIN_SRC js
+    console.log(console.log(1) || 2 || console.log(3)) //控制台先打印出1，然后是2
+    //console.log()返回值是undefined，是一个falsy值，所以会进一步向后取之，取到2后停止
+  #+END_SRC
+
+  [[https://zh.javascript.info/task/check-login][使用prompt的登陆验证]]
+  ```js //使用prompt进行登陆校验 'use strict' function loginCheck(){ let
+  userName = prompt("Enter your user name please:"); if (!userName){
+  alert("Canceled!"); return 0; } else if (!(userName === "Admin")) {
+  alert("I don't know you"); return 0; }
+
+  let passwd = prompt("Enter your password please:");
+
+  if (!passwd){ alert("Canceled!"); return 0; } else if (!(passwd ==
+  "TheMaster")) { alert("Wrong password"); return 0; }
+
+  alert("Welcome!"); return 0; }
+
+* 控制结构
+  :PROPERTIES:
+  :CUSTOM_ID: 控制结构
+  :END:
+
+- break
+- continue ## label:
+  break或continue后面如果接标签，标签必须在语句之上定义。 ## switch:
+  比较switch和case的value是否/严格相等/
+
+  - 注意=defaut=的使用
+  - 注意每个case的=break=，没有break就会继续执行下一个case
+
+- 一个例子
+  [[https://zh.javascript.info/task/list-primes][输出素数（prime）]]
+
+#+BEGIN_SRC js
+  function isPrime(n) {
+      for (let divider = 2 ; divider < n ; divider++) {
+          if (n%divider === 0) {
+              return false;
+          }
+      }
+      return true;
+  }
+
+  function listPrime(n) {
+      for (let prime = 2 ; prime <= n ; prime++) {
+          if (isPrime(prime)) {
+              console.log(`Found ${prime}!`);
+          }
+      }
+      return 0;
+  }
+#+END_SRC
+
+* 函数与函数表达式
+  :PROPERTIES:
+  :CUSTOM_ID: 函数与函数表达式
+  :END:
+
+** 语法区别
+   :PROPERTIES:
+   :CUSTOM_ID: 语法区别
+   :END:
+
+函数的花括号后面不需要=;= 函数表达式的花括号后面需要=;= ## 可见性区别
+/严格模式下/，当一个函数声明在一个代码块内时，它在该代码块内的任何位置都是可见的。但在代码块外不可见。
+如果把函数表达式赋值给一个在代码块外声明的变量时，可以在代码块外调用
+
+注意这里说的代码块是花括号的范围，不是/作用域/的概念。
+
+例子： ```js let age = prompt("What is your age?", 18);
+
+// 有条件地声明一个函数 if (age < 18) {
+
+#+BEGIN_EXAMPLE
+  function welcome() {
+    alert("Hello!");
+  }
+#+END_EXAMPLE
+
+} else {
+
+#+BEGIN_EXAMPLE
+  function welcome() {
+    alert("Greetings!");
+  }
+#+END_EXAMPLE
+
+}
+
+// ......稍后使用 welcome(); // Error: welcome is not defined =而=js let
+age = 16; // 拿 16 作为例子
+
+if (age < 18) { welcome(); //   (运行) // | function welcome() { // |
+alert("Hello!"); // | 函数声明在声明它的代码块内任意位置都可用 } // | //
+| welcome(); // / (运行)
+
+} else {
+
+#+BEGIN_EXAMPLE
+  function welcome() {
+    alert("Greetings!");
+  }
+#+END_EXAMPLE
+
+}
+
+// 在这里，我们在花括号外部调用函数，我们看不到它们内部的函数声明。
+
+welcome(); // Error: welcome is not defined ```
+
+* 对象的键
+  :PROPERTIES:
+  :CUSTOM_ID: 对象的键
+  :END:
+
+** =[key]= 的形式用来表示中间有空格的键名和变量名键名
+   :PROPERTIES:
+   :CUSTOM_ID: key-的形式用来表示中间有空格的键名和变量名键名
+   :END:
+
+** 计算属性->对象字面量中使用方括号
+   :PROPERTIES:
+   :CUSTOM_ID: 计算属性-对象字面量中使用方括号
+   :END:
+
+#+BEGIN_SRC js
+  let fruit = prompt("Which fruit to buy?", "apple");
+
+  let bag = {
+    [fruit]: 5, // 属性名是从 fruit 变量中得到的
+  };
+
+  alert( bag.apple ); // 5 如果 fruit="apple"
+#+END_SRC
+
+** 属性值的简写
+   :PROPERTIES:
+   :CUSTOM_ID: 属性值的简写
+   :END:
+
+#+BEGIN_SRC js
+  function makeUser(name, age) {
+    return {
+      name, // 与 name: name 相同
+      age,  // 与 age: age 相同
+      // ...
+    };
+  }
+  //也可以与正常键值对的方式混用
+  let user = {
+    name,  // 与 name:name 相同
+    age: 30
+  };  
+#+END_SRC
+
+** in操作符左边是属性名（通常是一个带引号的字符串）
+   :PROPERTIES:
+   :CUSTOM_ID: in操作符左边是属性名通常是一个带引号的字符串
+   :END:
+
+** 检测对象是否含有某个字符串
+   :PROPERTIES:
+   :CUSTOM_ID: 检测对象是否含有某个字符串
+   :END:
+
+- =obj.key === undefined=
+- =key in obj=
+
+第一种方法存在检测不到的情况，如下例：
+
+#+BEGIN_SRC js
+  let obj = {
+    test: undefined
+  };
+
+  alert( obj.test ); // 显示 undefined，所以属性不存在？
+
+  alert( "test" in obj ); // true，属性存在！
+#+END_SRC
+
+* for...in 循环，/整数属性/会被进行排序，其他属性则按照创建的顺序显示
+  :PROPERTIES:
+  :CUSTOM_ID: forin-循环整数属性会被进行排序其他属性则按照创建的顺序显示
+  :END:
+
+这里的"整数属性"指的是一个可以在不作任何更改的情况下转换为整数的字符串（包括整数到整数）。
+也就是说，对于key，有Number(key) = key = String( Number(key) )。
+比如，如果有obj["+49"]，key是"+49"。Number(key)=49，加号没有了，不是整数属性。
+比如，如果有obj["1.2"]，1.2不是整数。
+
+* 对象的相等判断，全等===和非全等==没有区别。只有在两个变量引用指向/同一个对象/时，才相等。
+  :PROPERTIES:
+  :CUSTOM_ID: 对象的相等判断全等和非全等没有区别只有在两个变量引用指向同一个对象时才相等
+  :END:
+
+* 对象的浅拷贝Object.assign(obj, [src1, src1, src1,
+...])，所有的src的属性都拷贝给obj，键名重复的，后面的会覆盖前面的
+  :PROPERTIES:
+  :CUSTOM_ID: 对象的浅拷贝object.assignobj-src1-src1-src1-所有的src的属性都拷贝给obj键名重复的后面的会覆盖前面的
+  :END:
+
+* 对象深拷贝，lodash库，=_.cloneDeep(obj)=
+  :PROPERTIES:
+  :CUSTOM_ID: 对象深拷贝lodash库_.clonedeepobj
+  :END:
+
+** 深拷贝算法 //：TODO
+   :PROPERTIES:
+   :CUSTOM_ID: 深拷贝算法-todo
+   :END:
+
+* 检查空对象
+  :PROPERTIES:
+  :CUSTOM_ID: 检查空对象
+  :END:
+
+[[https://zh.javascript.info/task/is-empty][检查空对象]]
+
+#+BEGIN_SRC js
+  function isEmpty(obj) {
+    for (let key in obj){
+      return false;
+    }
+    return true;
+  }
+#+END_SRC
+
+* JS垃圾回收（GC）的原理 （描述其原理）
+  :PROPERTIES:
+  :CUSTOM_ID: js垃圾回收gc的原理-描述其原理
+  :END:
+
+从根开始遍历所有根变量的引用再标记这些被引用的变量，再遍历这些标记的变量，直到所有可达（reachable）的引用都被标记。
+标记完成后，删除所有未被标记的变量。
+
+* Symbol类型
+  :PROPERTIES:
+  :CUSTOM_ID: symbol类型
+  :END:
+
+** let id = Symbol("id") // 没有new，Symbol的参数是一个字符串
+   :PROPERTIES:
+   :CUSTOM_ID: let-id-symbolid-没有newsymbol的参数是一个字符串
+   :END:
+
+** Symbol类型不会被自动转换为字符串
+   :PROPERTIES:
+   :CUSTOM_ID: symbol类型不会被自动转换为字符串
+   :END:
+
+** 显示一个Symbol：=alert ( id.toString() )==> Symbol(id)
+   :PROPERTIES:
+   :CUSTOM_ID: 显示一个symbolalert-id.tostring-symbolid
+   :END:
+
+** 显示一个Symbol描述：=alert (id.description)==>"id"，返回值是一个string
+   :PROPERTIES:
+   :CUSTOM_ID: 显示一个symbol描述alert-id.descriptionid返回值是一个string
+   :END:
+
+** for...in循环会跳过Symbol类型的键值对，但Object.assign会复制Symbol类型的键值对
+   :PROPERTIES:
+   :CUSTOM_ID: forin循环会跳过symbol类型的键值对但object.assign会复制symbol类型的键值对
+   :END:
+
+* 全局Symbol注册表
+  :PROPERTIES:
+  :CUSTOM_ID: 全局symbol注册表
+  :END:
+
+** Symbol.for()
+   :PROPERTIES:
+   :CUSTOM_ID: symbol.for
+   :END:
+
+** Symbol.keyFor()
+   :PROPERTIES:
+   :CUSTOM_ID: symbol.keyfor
+   :END:
+
+** 与Symbol的不同：
+   :PROPERTIES:
+   :CUSTOM_ID: 与symbol的不同
+   :END:
+
+- Symbol 总是不同的值，即使它们有相同的名字。
+- 如果我们希望同名的 Symbol 相等，那么我们应该使用全局注册表
+
+  - =Symbol.for(key)= 返回（如果需要的话则创建）一个以 key
+    作为名字的全局 Symbol。
+  - 使用 Symbol.for 多次调用 key 相同的 Symbol 时，返回的就是同一个
+    Symbol。
+
+* 系统Symbol
+  :PROPERTIES:
+  :CUSTOM_ID: 系统symbol
+  :END:
+
+#+BEGIN_SRC js
+  Symbol.hasInstance
+  Symbol.isConcatSpreadable
+  Symbol.iterator
+  Symbol.toPrimitive
+#+END_SRC
+
+* 获取Symbol的方法
+  :PROPERTIES:
+  :CUSTOM_ID: 获取symbol的方法
+  :END:
+
+** Object.getOwnPropertySymbols(obj)
+   :PROPERTIES:
+   :CUSTOM_ID: object.getownpropertysymbolsobj
+   :END:
+
+** Reflect.ownKeys(obj)
+   :PROPERTIES:
+   :CUSTOM_ID: reflect.ownkeysobj
+   :END:
+
+** Symbol类型的属性不是百分百隐藏的
+   :PROPERTIES:
+   :CUSTOM_ID: symbol类型的属性不是百分百隐藏的
+   :END:
+
+* 失去this的原因
+  :PROPERTIES:
+  :CUSTOM_ID: 失去this的原因
+  :END:
+
+** 原理
+   :PROPERTIES:
+   :CUSTOM_ID: 原理
+   :END:
+
+=.=或=[]=的方式调用方法时，会返回一个特殊的引用类型的值：=(base, name, strict)= -
+base 是对象 - name 是属性名 - strict是是否为=use strict=模式
+这个过程确定了函数体代码和this。这个引用类型的值仅在方法调用时使用，其它的赋值等操作等都会丢失这个值。
+
+如果将这个引用类型作为右值赋值给其它变量，这个引用类型的值会被整体丢弃，只把函数引用赋值给了新的变量，这个时候对新的变量执行函数就会失去this。因为this根本没有传过来
+## 一个例子：复杂运算失去this
+
+#+BEGIN_SRC js
+  let user = {
+    name: "Jesse",
+    sayName(){
+      console.log(this.name);
+    }
+  }
+
+  user.sayName(); //"Jesse"
+
+  let sayName = user.sayName();
+  sayName(); // 空白，因为this指向undefined
+
+  (false||user.sayName)(); // 空白。因为或操作符查找第一个真值并返回，返回后的sayName丢失了特殊引用类型，this指向undefined
+
+  (user.sayName)(); //"Jesse"。因为第一对括号可有可无，这里是设定计算顺序的，没有返回值的这个环节。
+  // 与上一个例子的区别
+  (false||user.sayName)(); //user.sayName返回一个引用类型，这个引用类型参与了`||`计算，这里丢失了引用类型
+  (user.sayName)(); //user.sayName返回了一个引用类型，这个引用类型随后被调用，所以没有丢失引用类型。
+#+END_SRC
+
+** 另一个例子：对象字面量中使用this
+   :PROPERTIES:
+   :CUSTOM_ID: 另一个例子对象字面量中使用this
+   :END:
+
+#+BEGIN_SRC js
+  let outerObj = {
+    name: "outer",
+    makeInner() {
+      return {
+        name: "inner",
+        ref: this
+      }
+    }
+  }
+  outerObj.makeInner().ref.name; //"outer"
+  outerObj.makeInner().name; //"inner"
+#+END_SRC
+
+* 链式调用的实现：每次调用后返回这个对象的自身
+  :PROPERTIES:
+  :CUSTOM_ID: 链式调用的实现每次调用后返回这个对象的自身
+  :END:
+
+#+BEGIN_SRC js
+  let ladder = {
+    step: 0,
+    up() {
+      this.step++;
+      return this;
+    },
+    down() {
+      this.step--;
+      return this;
+    },
+    showStep() {
+      alert( this.step );
+      return this;
+    }
+  }
+
+  ladder.up().up().down().up().down().showStep(); // 1
+#+END_SRC
+
+* 对象转换
+  :PROPERTIES:
+  :CUSTOM_ID: 对象转换
+  :END:
+
+** 所有对象在布尔上下文中均为=true=
+   :PROPERTIES:
+   :CUSTOM_ID: 所有对象在布尔上下文中均为true
+   :END:
+
+** 数值转换发生在对象相减或应用数学函数时（对象相加不是）
+   :PROPERTIES:
+   :CUSTOM_ID: 数值转换发生在对象相减或应用数学函数时对象相加不是
+   :END:
+
+** 字符串转换通常发生在=alert(obj)=这样一个输出对象或类似的上下文中
+   :PROPERTIES:
+   :CUSTOM_ID: 字符串转换通常发生在alertobj这样一个输出对象或类似的上下文中
+   :END:
+
+** 对象转换的hint
+   :PROPERTIES:
+   :CUSTOM_ID: 对象转换的hint
+   :END:
+
+*** "string"
+    :PROPERTIES:
+    :CUSTOM_ID: string
+    :END:
+
+#+BEGIN_EXAMPLE
+  ```js
+  // 输出
+  alert(obj);
+
+  // 将对象作为属性键
+  anotherObj[obj] = 123;
+  ```
+#+END_EXAMPLE
+
+*** "number"
+    :PROPERTIES:
+    :CUSTOM_ID: number
+    :END:
+
+#+BEGIN_EXAMPLE
+  ```js
+  // 显式转换
+  let num = Number(obj);
+
+  // 数学运算（除了二进制加法）
+  let n = +obj; // 一元加法
+  let delta = date1 - date2;
+
+  // 小于/大于的比较
+  let greater = user1 > user2;
+  ```
+#+END_EXAMPLE
+
+*** "default"
+    :PROPERTIES:
+    :CUSTOM_ID: default
+    :END:
+
+- 二元加法
+
+- 如果对象被用于与/字符串/、/数字/或 /symbol/ 进行 ==
+  比较（非全等），这时到底应该进行哪种转换也不是很明确，因此使用
+  "default" hint
+
+  #+BEGIN_SRC js
+    // 二元加法使用默认 hint
+    let total = obj1 + obj2;
+
+    // obj == number 使用默认 hint
+    if (user == 1) { ... };
+  #+END_SRC
+
+  * 对象转换的原理
+    :PROPERTIES:
+    :CUSTOM_ID: 对象转换的原理
+    :END:
+
+  ** 调用转换顺序
+     :PROPERTIES:
+     :CUSTOM_ID: 调用转换顺序
+     :END:
+
+1. 调用 obj[[file:hint][Symbol.toPrimitive]] --- 带有 symbol 键
+   Symbol.toPrimitive（系统 symbol）的方法，如果这个方法存在的话
+
+2. 否则，如果 hint 是 "string" --- 尝试 obj.toString() 和
+   obj.valueOf()，无论哪个存在。
+
+3. 否则，如果 hint 是 "number" 或 "default" --- 尝试 obj.valueOf() 和
+   obj.toString()，无论哪个存在。 ###
+   一个定义obj[[file:hint][Symbol.toPrimitive]]方法的例子 ```js let user
+   = { name: "John", money: 1000,
+
+   [[file:hint][Symbol.toPrimitive]] { alert(=hint: ${hint}=); return
+   hint == "string" ? ={name: "${this.name}"}= : this.money; } };
+
+   // 转换演示： alert(user); // hint: string -> {name: "John"}
+   alert(+user); // hint: number -> 1000 alert(user + 500); // hint:
+   default -> 1500
+   ``=## 对象转换的返回值不一定会返回其=hint`的原始值，只要返回值不是对象就行
+   # 构造函数、new关键字及构造函数的return ##
+   new关键字调用了构造函数时，发生了什么？
+
+4. 一个新的空对象被创建并分配给 this。
+
+5. 函数体执行。通常它会修改 this，为其添加新的属性。
+
+6. 返回 this 的值。 ##
+   构造器模式测试：new.target。返回一个布尔值，测试函数是否为new调用 ##
+   构造函数的return
+
+7. 如果 return 返回的是一个对象，则返回这个对象，而不是 this。
+
+8. 如果 return 返回的是一个原始类型，则忽略。
+
+TRYCAP
+
+* 数字进制与前缀
+** 16进制 0x hexademical - x
+** 2进制 0b binary - b
+** 8进制 0o octal - o
+* num.toString(base)，base是进制数字number类型。返回值是进制转化后的字符串化的数字，类型是string
+* 数字后直接加点调用方法会产生错误
+#+begin_src js
+123456.toString(2) //错误，因为浮点数格式是1234.5678，编译器会把123456.当成浮点数的小数点
+123456..toString(2) //正确
+#+end_src
+
+* 数字舍入
+** Math.floor() //向下舍入3.7=>3, -2.1=>-3
+** Math.ceil()  //向上摄入3.1=>4, -2.5=>-2 
+** Math.round() //四舍五入
+** Math.trunc() //直接舍弃小数位，ie不支持
+
+** 保留n位小数 num.toFix(n)，返回字符串类型，若要数字，前面加上=+=
+
+* isNaN()
+判断是不是NaN
+* isFinite(str)，参数是string
+判断是不是常规数字。
+- 如果是-Infinity Infinity或者其它字符串，返回false。
+- 如果是数字字符串 //true
+- null和"" //true
+- boolean //true
+- undefined //false
+#+begin_src js
+console.log(isFinite(null),isFinite(""), isFinite("null"), isFinite(false), isFinite(undefined));
+//true true false true false
+#+end_src
+* 将字符串转换为数字
+** Number()和+
+是严格的，除了开头和结尾的空格，出现非数字就是NaN
+** parseInt(numstr, base)，参数numchr是数字字符串
+** parseFloat(numstr, base)
+** 几个例子
+[[https://zh.javascript.info/task/why-rounded-down][为什么 6.35.toFixed(1) == 6.3？]]
+#+begin_src js
+  alert( 6.35.toFixed(1) ); // 6.3
+  //原因如下
+  alert( 6.35.toFixed(20) ); // 6.34999999999999964473
+  //所以使用.toFixed()会报错，因为精度有损失
+  console.log( Math.round(6.35 * 10) / 10); // 6.35 -> 63.5 -> 64(rounded) -> 6.4，问题解决
+#+end_src
+
+[[https://zh.javascript.info/task/endless-loop-error][偶发的无限循环]]
+#+begin_src js
+let i = 0;
+while (i != 10) {
+  i += 0.2;
+}
+
+let i = 0;
+while (i < 11) {
+  i += 0.2;
+  if (i > 9.8 && i < 10.2) console.log( i );
+}
+//9.999999999999996
+//10.199999999999996
+#+end_src
+** 随机数和随机整数
+[[https://zh.javascript.info/task/random-min-max][随机数]]
+#+begin_src js
+  //生成min 到 max之间的随机数（不包括max）
+  function random (min, max) {
+    let seed = Math.random();
+    let seedAmp = seed * (max-min);
+    return min+seedAmp;
+  }
+#+end_src
+[[https://zh.javascript.info/task/random-int-min-max][随机整数]]
+创建一个函数 randomInteger(min，max)，该函数会生成一个范围在 min 到 max 中的随机整数，包括 min 和 max。
+
+在 min..max 范围中的所有数字的*出现概率*必须相同。
+
+#+begin_src js
+//仔细思考这个出现概率
+  function randomInteger(min, max) {
+    // here rand is from min to (max+1)
+    let rand = min + Math.random() * (max + 1 - min);
+    return Math.floor(rand);
+  }
+#+end_src
+* 字符串长度属性str.length后面没有括号，不是方法
+* 遍历字符串用for...of
+* 改变字符串大小写(方法)
+** str.toUpperCase()
+** str.toLowerCase()
+* 查找子*字符串*位置str.indexOf(substr, pos)，返回-1，0，或index
+第二个参数是开始检索的位置
+** 倒序str.lastIndexOf(substr, pos)
+** 直接将indexOf()方法的返回值作为if（或其它需要Boolean的上下文）是不靠谱的
+因为indexOf()方法的返回值可能是0，代表在字符串的起始位置就找到了substr，而0是falsy的，会被Boolean直接转换为false。
+正确的方法是用~if (str.indexOf("Widget") != -1)~的形式
+* 字符串查找的现代方法 
+** str.includes(substr)
+** str.startsWith(substr)
+** str.endsWith(substr)
+* 获取子字符串（注意与array的方法区分）
+** str.slice(start [, end])，从start开始到end结束，不包括end。允许负值。
+** str.substring(start [, end])，从start开始到end结束，不包括*两头*。start/end可以换位置，但是不允许负值
+** str.substr(start [, length])，允许start为负数
+* 字符串与UTF-16
+** str.codePointAt(pos)，获得pos处字符的UTF-16编码（返回值：10进制数字）
+** str.fromCodePoint(code)，用创建一个UTF-16编码对应的字符，参数code是10进制数字的UTF-16编码
+** 使用16进制的UTF-16编码直接创建字符，'\u005a'
+* 删除字符串前后空格 str.trim()
+* 重复字符串n次，str.repeat(n)
+* 几个字符串的例子
+** 转换首字母大写的坑
+[[https://zh.javascript.info/task/ucfirst][首字母转换]]
+#+begin_src js
+  function ucFirst(str) {
+    if (!str) return str;//判断是否是空字符串
+
+    //如果不加上一个if，也可以：
+    //使用 str.charAt(0)，因为它总是会返回一个字符串（可能为空）
+
+    return str[0].toUpperCase() + str.slice(1);
+  }
+    //按理说，这个函数应该返回一个字符串
+    //如果说str本身是空的，那么返回值也应该是一个空字符串
+    //但是如果这个retern中处理大小写转换的部分用的是str[0]的话，如果str本身就是一个空的字符串，str[0]返回的是undefined。那么undefined+String类型会返回"undefinestr”，导致最终返回“undefined”。
+    //问题解决。
+#+end_src
+** 截断文本
+#+begin_src js
+  //创建函数 truncate(str, maxlength) 来检查 str 的长度，如果超过 maxlength —— 应使用 "…" 来代替 str 的结尾部分，长度仍然等于 maxlength。
+
+  //函数的结果应该是截断后的文本（如果需要的话）。
+  function truncate(str, maxlength) {
+    if (str.length > maxlength) {
+      return str.slice(0, maxlength-1) + "...";
+    }
+    return str;
+  }
+#+end_src
+* 清空数组最简单的方法 arr.length = 0
+* 数组的转换
+** 数组没有 Symbol.toPrimitive，也没有 valueOf，它们只能执行 toString 进行转换
+** 数组的toString()方法会返回以~,~隔开的元素列表的字符串
+** 二元数组，相当于对所有元素数组也执行toString()
+#+begin_src js
+    let testArr = [
+      [1,2,3],
+      [2,3,4],
+      [3,4,5]
+    ]
+  //1,2,3,2,3,4,3,4,5
+#+end_src
+** 输入数字求和
+写出函数 sumInput()，要求如下：
+
+使用 prompt 向用户索要值，并存在数组中。
+当用户输入了非数字、空字符串或者点击“取消”按钮的时候，问询结束。
+计算并返回数组所有项之和。
+P.S. 0 是有效的数字，不要因为是 0 就停止问询。
+#+begin_src js
+function sumInput() {
+
+  let numbers = [];
+
+  while (true) {
+
+    let value = prompt("A number please?", 0);
+
+    // 应该结束了吗？
+    if (value === "" || value === null || !isFinite(value)) break;
+
+    numbers.push(+value);
+  }
+
+  let sum = 0;
+  for (let number of numbers) {
+    sum += number;
+  }
+  return sum;
+}
+
+alert( sumInput() );
+// 使用isFinite而不是isNaN的原因：
+
+// isFinite: if the argument is positive or negative Infinity or NaN or undefined return false
+// isNaN: if the argument is NaN return true
+
+// isNaN不包含超限检测，然而数值超限将导致加法计算不准确，因此需要考虑超限的情况。
+#+end_src
+** 最大子数组
+[[https://zh.javascript.info/task/maximal-subarray][最大子数组]]
+输入是以数字组成的数组，例如 arr = [1, -2, 3, 4, -9, 6].
+
+任务是：找出所有项的和最大的 arr 数组的连续子数组。
+
+写出函数 getMaxSubSum(arr)，用其找出并返回最大和。
+#+begin_src js
+  function getMaxSubSum(arr) {
+    let maxSum = 0;
+    let partialSum = 0;
+
+    for (let item of arr) { // arr 中的每个 item
+      partialSum += item; // 将其加到 partialSum
+      maxSum = Math.max(maxSum, partialSum); // 记住最大值
+      if (partialSum < 0) partialSum = 0; // 如果是负数就置为 0
+    }
+
+    return maxSum;
+  }
+
+  alert( getMaxSubSum([-1, 2, 3, -9]) ); // 5
+  alert( getMaxSubSum([-1, 2, 3, -9, 11]) ); // 11
+  alert( getMaxSubSum([-2, -1, 1, 2]) ); // 3
+  alert( getMaxSubSum([100, -9, 2, -3, 5]) ); // 100
+  alert( getMaxSubSum([1, 2, 3]) ); // 6
+  alert( getMaxSubSum([-1, -2, -3]) ); // 0
+#+end_src
+算法思想：
+一列数组可以简化为如下情况：
+[leftSum,minusMin,rightSum]
+
+如果 leftSum>minusMin && rightSum>minusMin，返回leftSum+minusMinx+rightSum
+如果 leftSum>rightSum，且rightSum+minusMin<0，返回leftSum
+如果 leftSum>rightSum，且rightSum+minusMin=0，返回leftSum
+如果 leftSum+minusMin <0, rightSum+minusMin <0, 返回左右和的最大值
+
+这个算法在循环过程中将数字累加，并记住最大值
+如果遇到负数，且此暂时最大值小于负数，则从负数之后重新开始计算。
+因为这证明左最大值小于此负数了，在这里打一个断点。
+
+* 数组方法
+** arr.splice(index[, deleteCount, elem1, ..., elemN])
+** arr.slice(star[, end])，不包括end
+** arr.concat(arg1,arg2)，如果arg1或者arg2是一个array，会被展开
+*** 如果类似数组的对象具有 Symbol.isConcatSpreadable 属性，那么它就会被 concat 当作一个数组来处理（注意是array_like）
+** arr.forEach()方法，为数组每个元素执行一个函数。函数执行结果会被抛弃
+语法：
+#+begin_src js
+  arr.forEach(function(item, index, array) {
+    // ... do something with item
+  });
+#+end_src
+** indexOf & includes
+~arr.indexOf(item, from)~ -  从索引 from 开始搜索 item，如果找到则返回索引，否则返回 -1。
+~arr.lastIndexOf(item, from)~ — 和上面相同，只是从右向左搜索。
+~arr.includes(item, from)~ — 从索引 from 开始搜索 item，如果找到则返回 true（译注：如果没找到，则返回 false）。
+- 请注意，这些方法使用的是严格相等 === 比较。所以如果我们搜索 false，会精确到的确是 false 而不是数字 0。
+- 此外，includes 的一个非常小的差别是它能正确处理NaN，而不像 indexOf/lastIndexOf：
+#+begin_src js
+  const arr = [NaN];
+  alert( arr.indexOf(NaN) ); // -1（应该为 0，但是严格相等 === equality 对 NaN 无效）
+  alert( arr.includes(NaN) );// true（这个结果是对的）
+#+end_src
+** 在数组中搜索
+*** arr.find()
+    #+begin_src js
+      let result = arr.find(function(item, index, array) {
+        // 如果返回 true，则返回 item 并停止迭代
+        // 对于 falsy 则返回 undefined
+      })
+     #+end_src
+*** arr.findIndex()
+    语法与find相同，但是返回的是元素的index
+*** arr.filter()，语法与find相同，但是返回满足条件的元素组成的新数组
+** 转换数组
+*** arr.map()
+*** arr.sort() 有副作用，改变arr本身，回调函数中的a，b：b是第一个数，而a是第二个数!!!
+*** arr.reverse() 有副作用，改变arr本身
+* 使用 localeCompare for strings
+对于许多字母，最好使用 str.localeCompare 方法正确地对字母进行排序，例如 Ö。
+例如，让我们用德语对几个国家/地区进行排序：
+
+str.localeCompare(str2)语法：
+str.localeCompare(str2) 会根据语言规则返回一个整数，这个整数能表明 str 是否在 str2 前，后或者等于它：
+str.localeCompare(str2)比较的是str是否大于str2!!!
+
+如果 str 小于 str2 则返回负数。
+如果 str 大于 str2 则返回正数。
+如果它们相等则返回 0。
+
+#+begin_src js
+    let countries = ['Österreich', 'Andorra', 'Vietnam'];
+
+    alert( countries.sort( (a, b) => a > b ? 1 : -1) ); // Andorra, Vietnam, Österreich（错的）
+
+    alert( countries.sort( (a, b) => a.localeCompare(b) ) ); // Andorra,Österreich,Vietnam（对的！）
+   #+end_src
