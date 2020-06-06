@@ -7,8 +7,8 @@ null 特殊的 null 值不属于上述任何一种类型,
 它构成了一个独立的类型，只包含 null 值
 
 undefined 特殊值 undefined 和 null 一样自成类型。undefined 的含义是
-未被赋值。如果一个变量已被声明，但未被赋值，那么它的值就是 undefined #
-如果想要获得一些关于浏览器和其他引擎的兼容性信息，请看：
+未被赋值。如果一个变量已被声明，但未被赋值，那么它的值就是 undefined
+* 如果想要获得一些关于浏览器和其他引擎的兼容性信息，请看：
 
 - http://caniuse.com ------ 每个功能都列有一个支持信息表格
   例如想看哪个引擎支持现代加密（cryptography）函数：http://caniuse.com/#feat=cryptography。
@@ -58,7 +58,8 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
   alert( Number(false) );       // 0
 #+END_SRC
 
-- Boolean() 0, null, undefined, NaN, "" => false 其它都是true
+- Boolean() 0, null, undefined, NaN, "" =
+> false 其它都是true
 
 #+BEGIN_SRC js
   console.log(Boolean("0")," ",Boolean(" ")) //true true !!!
@@ -238,8 +239,10 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
   :END:
 
 - break
-- continue ## label:
-  break或continue后面如果接标签，标签必须在语句之上定义。 ## switch:
+- continue
+** label:
+  break或continue后面如果接标签，标签必须在语句之上定义。
+** switch:
   比较switch和case的value是否/严格相等/
 
   - 注意=defaut=的使用
@@ -268,6 +271,7 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
   }
 #+END_SRC
 
+* for循环的循环体内let定义的变量，在循环体外是为定义的（不可见的）!!!
 * 函数与函数表达式
   :PROPERTIES:
   :CUSTOM_ID: 函数与函数表达式
@@ -278,7 +282,8 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
    :CUSTOM_ID: 语法区别
    :END:
 
-函数的花括号后面不需要=;= 函数表达式的花括号后面需要=;= ## 可见性区别
+函数的花括号后面不需要=;= 函数表达式的花括号后面需要=;=
+** 可见性区别
 /严格模式下/，当一个函数声明在一个代码块内时，它在该代码块内的任何位置都是可见的。但在代码块外不可见。
 如果把函数表达式赋值给一个在代码块外声明的变量时，可以在代码块外调用
 
@@ -465,19 +470,19 @@ welcome(); // Error: welcome is not defined ```
    :CUSTOM_ID: symbol类型不会被自动转换为字符串
    :END:
 
-** 显示一个Symbol：=alert ( id.toString() )==> Symbol(id)
+** 显示一个Symbol：alert ( id.toString() )==> Symbol(id)
    :PROPERTIES:
    :CUSTOM_ID: 显示一个symbolalert-id.tostring-symbolid
    :END:
 
-** 显示一个Symbol描述：=alert (id.description)==>"id"，返回值是一个string
+** 显示一个Symbol描述：alert (id.description)==>"id"，返回值是一个string
    :PROPERTIES:
    :CUSTOM_ID: 显示一个symbol描述alert-id.descriptionid返回值是一个string
    :END:
 
 ** for...in循环会跳过Symbol类型的键值对，但Object.assign会复制Symbol类型的键值对
    :PROPERTIES:
-   :CUSTOM_ID: forin循环会跳过symbol类型的键值对但object.assign会复制symbol类型的键值对
+   :CUSTOM_ID: for...in循环会跳过symbol类型的键值对但object.assign会复制symbol类型的键值对
    :END:
 
 * 全局Symbol注册表
@@ -503,10 +508,8 @@ welcome(); // Error: welcome is not defined ```
 - Symbol 总是不同的值，即使它们有相同的名字。
 - 如果我们希望同名的 Symbol 相等，那么我们应该使用全局注册表
 
-  - =Symbol.for(key)= 返回（如果需要的话则创建）一个以 key
-    作为名字的全局 Symbol。
-  - 使用 Symbol.for 多次调用 key 相同的 Symbol 时，返回的就是同一个
-    Symbol。
+  - =Symbol.for(key)= 返回（如果需要的话则创建）一个以 key作为名字的全局 Symbol。
+  - 使用 Symbol.for 多次调用 key 相同的 Symbol 时，返回的就是同一个Symbol。
 
 * 系统Symbol
   :PROPERTIES:
@@ -555,7 +558,7 @@ base 是对象 - name 是属性名 - strict是是否为=use strict=模式
 这个过程确定了函数体代码和this。这个引用类型的值仅在方法调用时使用，其它的赋值等操作等都会丢失这个值。
 
 如果将这个引用类型作为右值赋值给其它变量，这个引用类型的值会被整体丢弃，只把函数引用赋值给了新的变量，这个时候对新的变量执行函数就会失去this。因为this根本没有传过来
-## 一个例子：复杂运算失去this
+** 一个例子：复杂运算失去this
 
 #+BEGIN_SRC js
   let user = {
@@ -685,12 +688,11 @@ base 是对象 - name 是属性名 - strict是是否为=use strict=模式
     :PROPERTIES:
     :CUSTOM_ID: default
     :END:
+在少数情况下发生，当运算符“不确定”期望值的类型时。
 
-- 二元加法
+例如，二进制加法 + 可用于字符串（连接），也可以用于数字（相加），所以字符串和数字这两种类型都可以。因此，当二元加法得到对象类型的参数时，它将依据 "default" hint 来对其进行转换。
 
-- 如果对象被用于与/字符串/、/数字/或 /symbol/ 进行 ==
-  比较（非全等），这时到底应该进行哪种转换也不是很明确，因此使用
-  "default" hint
+此外，如果对象被用于与字符串、数字或 symbol 进行 == 比较，这时到底应该进行哪种转换也不是很明确，因此使用 "default" hint。
 
   #+BEGIN_SRC js
     // 二元加法使用默认 hint
@@ -700,50 +702,52 @@ base 是对象 - name 是属性名 - strict是是否为=use strict=模式
     if (user == 1) { ... };
   #+END_SRC
 
-  * 对象转换的原理
+* 对象转换的原理
     :PROPERTIES:
     :CUSTOM_ID: 对象转换的原理
     :END:
 
-  ** 调用转换顺序
+** 调用转换顺序
      :PROPERTIES:
      :CUSTOM_ID: 调用转换顺序
      :END:
 
-1. 调用 obj[[file:hint][Symbol.toPrimitive]] --- 带有 symbol 键
-   Symbol.toPrimitive（系统 symbol）的方法，如果这个方法存在的话
+调用 obj[Symbol.toPrimitive](hint) — 带有 symbol 键 Symbol.toPrimitive（系统 symbol）的方法，如果这个方法存在的话，
+否则，如果 hint 是 "string" — 尝试 obj.toString() 和 obj.valueOf()，无论哪个存在。
+否则，如果 hint 是 "number" 或 "default" — 尝试 obj.valueOf() 和 obj.toString()，无论哪个存在。
 
-2. 否则，如果 hint 是 "string" --- 尝试 obj.toString() 和
-   obj.valueOf()，无论哪个存在。
+*** 一个定义obj[[file:hint][Symbol.toPrimitive]]方法的例子
+#+begin_src js
+  let user = {
+    name: "John",
+    money: 1000,
 
-3. 否则，如果 hint 是 "number" 或 "default" --- 尝试 obj.valueOf() 和
-   obj.toString()，无论哪个存在。 ###
-   一个定义obj[[file:hint][Symbol.toPrimitive]]方法的例子 ```js let user
-   = { name: "John", money: 1000,
+    [Symbol.toPrimitive](hint) {
+      alert(`hint: ${hint}`);
+      return hint == "string" ? `{name: "${this.name}"}` : this.money;
+    }
+  };
 
-   [[file:hint][Symbol.toPrimitive]] { alert(=hint: ${hint}=); return
-   hint == "string" ? ={name: "${this.name}"}= : this.money; } };
+  // 转换演示：
+  alert(user); // hint: string -> {name: "John"}
+  alert(+user); // hint: number -> 1000
+  alert(user + 500); // hint: default -> 1500
+#+end_src
+* 构造函数、new关键字及构造函数的return
+** new关键字调用了构造函数时，发生了什么？
 
-   // 转换演示： alert(user); // hint: string -> {name: "John"}
-   alert(+user); // hint: number -> 1000 alert(user + 500); // hint:
-   default -> 1500
-   ``=## 对象转换的返回值不一定会返回其=hint`的原始值，只要返回值不是对象就行
-   # 构造函数、new关键字及构造函数的return ##
-   new关键字调用了构造函数时，发生了什么？
+- 一个新的空对象被创建并分配给 this。
 
-4. 一个新的空对象被创建并分配给 this。
+- 函数体执行。通常它会修改 this，为其添加新的属性。
 
-5. 函数体执行。通常它会修改 this，为其添加新的属性。
+- 返回 this 的值
+** 构造器模式测试：new.target。返回一个布尔值，测试函数是否为new调用
 
-6. 返回 this 的值。 ##
-   构造器模式测试：new.target。返回一个布尔值，测试函数是否为new调用 ##
-   构造函数的return
+** 构造函数的return
 
 7. 如果 return 返回的是一个对象，则返回这个对象，而不是 this。
 
 8. 如果 return 返回的是一个原始类型，则忽略。
-
-TRYCAP
 
 * 数字进制与前缀
 ** 16进制 0x hexademical - x
@@ -765,7 +769,9 @@ TRYCAP
 ** 保留n位小数 num.toFix(n)，返回字符串类型，若要数字，前面加上=+=
 
 * isNaN()
+  
 判断是不是NaN
+* typeof NaN // number
 * isFinite(str)，参数是string
 判断是不是常规数字。
 - 如果是-Infinity Infinity或者其它字符串，返回false。
@@ -1032,3 +1038,548 @@ str.localeCompare(str2)比较的是str是否大于str2!!!
 
     alert( countries.sort( (a, b) => a.localeCompare(b) ) ); // Andorra,Österreich,Vietnam（对的！）
    #+end_src
+* 分割字符串 / 粘合数组
+** str.split(delim[, arrLength])
+** array.join(glue) glue是用来“粘合”数组字符串的字符
+* reduce / reduceRight
+  语法：
+  #+begin_src js
+    let value = arr.reduce(function(accumulator, item, index, array) {
+      // ...
+    }, [initial]);
+  #+end_src
+
+ -  如果没有初始值，那么 reduce 会将数组的第一个元素作为初始值，并从第二个元素开始迭代。
+ -  但是这种使用需要非常小心。如果数组为空，那么在没有初始值的情况下调用 reduce 会导致错误。
+* Array.isArray(arr)。判断是否为数组不能用typeof，因为无论是数组还是对象，返回值都是object
+* 数组的转换和reduce方法都支持thisArg，是最后一个参数。
+* 数组方法备忘单：
+
+** 添加/删除元素：
+
+push(...items) — 向尾端添加元素，
+pop() — 从尾端提取一个元素，
+shift() — 从首端提取一个元素，
+unshift(...items) — 向首端添加元素，
+splice(pos, deleteCount, ...items) — 从 index 开始删除 deleteCount 个元素，并在当前位置插入 items。
+slice(start, end) — 创建一个新数组，将从位置 start 到位置 end（但不包括 end）的元素复制进去。
+concat(...items) — 返回一个新数组：复制当前数组的所有元素，并向其中添加 items。如果 items 中的任意一项是一个数组，那么就取其元素。
+** 搜索元素：
+
+indexOf/lastIndexOf(item, pos) — 从位置 pos 开始搜索 item，搜索到则返回该项的索引，否则返回 -1。
+includes(value) — 如果数组有 value，则返回 true，否则返回 false。
+find/filter(func) — 通过 func 过滤元素，返回使 func 返回 true 的第一个值/所有值。
+findIndex 和 find 类似，但返回索引而不是值。
+** 遍历元素：
+
+forEach(func) — 对每个元素都调用 func，不返回任何内容。
+** 转换数组：
+
+map(func) — 根据对每个元素调用 func 的结果创建一个新数组。
+sort(func) — 对数组进行原位（in-place）排序，然后返回它。
+reverse() — 原位（in-place）反转数组，然后返回它。
+split/join — 将字符串转换为数组并返回。
+reduce(func, initial) — 通过对每个元素调用 func 计算数组上的单个值，并在调用之间传递中间结果。
+** 其他：  – Array.isArray(arr) 检查 arr 是否是一个数组。
+
+** 请注意，sort，reverse 和 splice 方法修改的是数组本身。!!!
+
+** 较为不常用的方法：
+
+~arr.some(fn) / arr.every(fn)~ 检查数组。
+
+与 map 类似，对数组的每个元素调用函数 fn。如果任何/所有结果为 true，则返回 true，否则返回 false。
+
+~arr.fill(value, start, end)~ — 从索引 start 到 end，用重复的 value 填充数组。
+
+~arr.copyWithin(target, start, end)~ — 将从位置 start 到 end 的所有元素复制到 自身 的 target 位置（覆盖现有元素）。
+* 原位（in place）的概念。修改原数组的数据，产生了副作用。（原位过滤、原位排序等）
+* 数组方法的几个例子
+** 转换为驼峰命名法
+#+begin_src js
+function camelize(str) {
+  return str
+    .split('-') // splits 'my-long-word' into array ['my', 'long', 'word']
+    .map(
+      // capitalizes first letters of all array items except the first one
+      // converts ['my', 'long', 'word'] into ['my', 'Long', 'Word']
+      (word, index) => index == 0 ? word : word[0].toUpperCase() + word.slice(1)
+    )
+    .join(''); // joins ['my', 'Long', 'Word'] into 'myLongWord'
+}
+// 注意这个解决方案没有考虑分割开的子string可能为空字符串的情况，因为默认不会出现这样的情况。
+// 但是如果用 debug-mode--ver-1，这种，出现双下划线的情况，就会出现前文说到的undefined问题
+#+end_src
+
+** 非原位排序数组（无副作用的sort）
+   #+begin_src js
+     function copySorted(arr) {
+       return arr.slice().sort();
+     }
+
+     let arr = ["HTML", "JavaScript", "CSS"];
+
+     let sorted = copySorted(arr);
+
+     alert( sorted );
+     alert( arr );
+     // str.slice直接浅拷贝一个array
+   #+end_src
+** 可扩展的calculator
+#+begin_src js
+function Calculator() {
+
+  this.methods = {
+    "-": (a, b) => a - b,
+    "+": (a, b) => a + b
+  };
+
+  this.calculate = function(str) {
+
+    let split = str.split(' '),
+      a = +split[0],
+      op = split[1],
+      b = +split[2]
+
+    if (!this.methods[op] || isNaN(a) || isNaN(b)) {
+      return NaN;
+    } //*
+
+    return this.methods[op](a, b);
+  }
+
+  this.addMethod = function(name, func) {
+    this.methods[name] = func;
+  };
+}
+// 注意*行的条件判断：如果不存在方法、操作数非数字，直接返回NaN。
+// 这里用isFinite()更好，可以处理infinity的情况
+#+end_src
+** 映射到对象
+#+begin_src js
+let john = { name: "John", surname: "Smith", id: 1 };
+let pete = { name: "Pete", surname: "Hunt", id: 2 };
+let mary = { name: "Mary", surname: "Key", id: 3 };
+
+let users = [ john, pete, mary ];
+
+let usersMapped = users.map(user => ({
+  fullName: `${user.name} ${user.surname}`,
+  id: user.id
+}));//注意箭头函数返回值带大括号时需要用小括号扩起来，不然箭头函数会认为大括号内是函数体
+
+/*
+usersMapped = [
+  { fullName: "John Smith", id: 1 },
+  { fullName: "Pete Hunt", id: 2 },
+  { fullName: "Mary Key", id: 3 }
+]
+*/
+
+alert( usersMapped[0].id ); // 1
+alert( usersMapped[0].fullName ); // John Smith
+#+end_src
+** 随机排列数组（shuffle）
+[[https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle][Fisher-yates shuffle]] 算法
+优点：没有排序（sort方法）开销，各种组合出现的概率相等
+
+普通算法：
+#+begin_src js
+function shuffle(array) {
+  array.sort(() => Math.random() - 0.5);
+} //生成-0.5～0.5的随机数，作为排序因子
+
+let arr = [1, 2, 3];
+shuffle(arr);
+alert(arr);
+#+end_src
+这种算法会造成各种组合出现概率不相等的问题，如下测试代码：
+#+begin_src js
+function shuffle(array) {
+  array.sort(() => Math.random() - 0.5);
+}
+
+// 所有可能排列的出现次数
+let count = {
+  '123': 0,
+  '132': 0,
+  '213': 0,
+  '231': 0,
+  '321': 0,
+  '312': 0
+};
+
+for (let i = 0; i < 1000000; i++) {
+  let array = [1, 2, 3];
+  shuffle(array);
+  count[array.join('')]++;
+}
+
+// 显示所有可能排列的出现次数
+for (let key in count) {
+  alert(`${key}: ${count[key]}`);
+}
+#+end_src
+结果：
+123: 250706
+132: 124425
+213: 249618
+231: 124880
+312: 125148
+321: 125223
+123和213出现的概率远高于其它。不同组合的出现概率与不同引擎的不同实现相关
+** 数组去重的性能问题
+#+begin_src js
+function unique(arr) {
+  let result = [];
+
+  for (let str of arr) {
+    if (!result.includes(str)) {
+      result.push(str);
+    }
+  }
+
+  return result;
+}
+
+let strings = ["Hare", "Krishna", "Hare", "Krishna",
+  "Krishna", "Krishna", "Hare", "Hare", ":-O"
+];
+
+alert( unique(strings) ); // Hare, Krishna, :-O
+#+end_src
+存在潜在的性能问题。
+
+方法 result.includes(str) 在内部遍历数组 result，并将每个元素与 str 进行比较以找到匹配项。
+
+所以如果 result 中有 100 个元素，并且没有任何一项与 str 匹配，那么它将遍历整个 result 并进行 100 次比较。如果 result 很大，比如 10000，那么就会有 10000 次的比较。
+
+这本身并不是问题，因为 JavaScript 引擎速度非常快，所以遍历一个有 10000 个元素的数组只需要几微秒。
+
+但是我们在 for循环中对 arr 的每个元素都进行了一次检测。
+
+因此，如果 arr.length 是 10000，我们会有 10000 * 10000 = 1 亿次的比较。那真的太多了。
+
+所以该解决方案仅适用于小型数组。
+
+[[https://zh.javascript.info/map-set][集合和映射]]能够解决这个性能问题
+
+* 区分iterable object和array like
+** Iterable 如上所述，是实现 Symbol.iterator 方法的对象。
+** Array-like 是有索引和 length 属性的对象，所以它们看起来很像数组。
+
+* Symbol.iterator
+  一个专门用于使对象可迭代的内置 symbol:
+
+1. 当 for..of 循环启动时，它会调用这个方法（如果没找到，就会报错）。这个方法必须返回一个 迭代器（iterator） —— 一个有 next 方法的对象。
+2. 从此开始，for..of 仅适用于这个被返回的对象。
+3. 当 for..of 循环希望取得下一个数值，它就调用这个对象的 next() 方法。
+next() 方法返回的结果的格式必须是 {done: Boolean, value: any}，当 done=true 时，表示迭代结束，否则 value 是下一个值。
+
+#+begin_src js
+  let range = {
+    from: 1,
+    to: 5
+  };
+
+  // 我们希望 for..of 这样运行：
+  // for(let num of range) ... num=1,2,3,4,5
+
+  range[Symbol.iterator] = function() {
+
+    // ……它返回迭代器对象（iterator object）：
+    // 2. 接下来，for..of 仅与此迭代器一起工作，要求它提供下一个值
+    return {
+      current: this.from,
+      last: this.to,
+
+      // 3. next() 在 for..of 的每一轮循环迭代中被调用
+      next() {
+        // 4. 它将会返回 {done:.., value :...} 格式的对象
+        if (this.current <= this.last) {
+          return { done: false, value: this.current++ };
+        } else {
+          return { done: true };
+        }
+      }
+    };
+  };
+
+  // 现在它可以运行了！
+  for (let num of range) {
+    alert(num); // 1, 然后是 2, 3, 4, 5
+  }
+#+end_src
+
+从技术上说，我们可以将它们合并，并使用 range 自身作为迭代器来简化代码。
+但缺点是，现在不可能同时在对象上运行两个 for..of 循环了：它们将共享迭代状态，因为只有一个迭代器，即对象本身。但是两个并行的 for..of 是很罕见的，即使在异步情况下。
+#+begin_src js
+  let range = {
+    from: 1,
+    to: 5,
+
+    [Symbol.iterator]() {
+      this.current = this.from;
+      return this;
+    },
+
+    next() {
+      if (this.current <= this.to) {
+        return { done: false, value: this.current++ };
+      } else {
+        return { done: true };
+      }
+    }
+  };
+
+  for (let num of range) {
+    alert(num); // 1, 然后是 2, 3, 4, 5
+ #+end_src
+
+ ** 显式调用迭代器
+ #+begin_src js
+ let str = "Hello";
+
+// 和 for..of 做相同的事
+// for (let char of str) alert(char);
+
+let iterator = str[Symbol.iterator]();
+
+while (true) {
+  let result = iterator.next();
+  if (result.done) break;
+  alert(result.value); // 一个接一个地输出字符
+}
+#+end_src
+
+* Array.from(arrayLike/iterable)可以从可迭代对象和类数组对象中生成一个真正的数组，从而可以利用pop push等数组的方法。可选参数中可以传入一个mapFn，设置映射方式
+完整语法： ~Array.from(obj[, mapFn, thisArg])~
+
+* 原生字符串方法的坑
+
+** str.split()不能正确处理“代理对”即UTF-16扩展字符，而Array.from可以。for...of也可以
+   Array.from()的实现方式如下：
+   #+begin_src js
+     let str = '𝒳😂';
+
+     let chars = []; // Array.from 内部执行相同的循环
+     for (let char of str) {
+       chars.push(char);
+     }
+
+     alert(chars);
+    #+end_src
+** 创建支持代理对的slice函数
+   #+begin_src js
+     function slice(str, start, end) {
+       return Array.from(str).slice(start, end).join('');
+     }
+
+     let str = '𝒳😂𩷶';
+
+     alert( slice(str, 1, 3) ); // 😂𩷶
+
+     // 原生方法不支持识别代理对（译注：UTF-16 扩展字符）
+     alert( str.slice(1, 3) ); // 乱码（两个不同 UTF-16 扩展字符碎片拼接的结果）
+    #+end_src
+* map
+  语法：~let testMap = new Map([ key1, value1 ], [ key2, value2])~
+  可以是一个带键值对的数组，也可以是其它可迭代对象。!!!
+
+  方法和属性如下：
+
+  new Map() —— 创建 map。
+  map.set(key, value) —— 根据键存储值,返回修改后的map
+  map.get(key) —— 根据键来返回值，如果 map 中不存在对应的 key，则返回 =undefined= 。
+  map.has(key) —— 如果 key 存在则返回 true，否则返回 false。
+  map.delete(key) —— 删除指定键的值，如果被删除的entry存在，返回true，如果不存在返回false
+  map.clear() —— 清空 map。没有返回值
+  map.size —— 返回当前元素个数。
+
+  注意
+  map[key] 不是使用 Map 的正确方式
+  虽然 map[key] 也有效，例如我们可以设置 map[key] = 2，这样会将 map 视为 JavaScript 的 plain object，因此它暗含了所有相应的限制（没有对象键等）。
+
+  所以我们应该使用 map 方法：set 和 get 等。
+** Map 是怎么比较键的？
+Map 使用 SameValueZero 算法来比较键是否相等。它和严格等于“===”差不多，但区别是 NaN 被看成是等于 NaN。所以 NaN 也可以被用作键。
+
+这个算法不能被改变或者自定义。
+** 链式调用：每一次 map.set 调用都会返回 map 本身，所以我们可以进行“链式”调用
+** map迭代
+*** 返回可迭代对象的方法：
+   map.keys() —— 遍历并返回所有的键（returns an iterable for keys），
+   map.values() —— 遍历并返回所有的值（returns an iterable for values），
+   map.entries() —— 遍历并返回所有的实体（returns an iterable for entries）[key, value]，for..of 在默认情况下使用的就是这个。
+*** map的迭代顺序，与插入值的顺序相同
+    迭代的顺序与插入值的顺序相同。与普通的 Object 不同，Map 保留了此顺序。
+*** map的forEach()方法
+    #+begin_src js
+      // 对每个键值对 (key, value) 运行 forEach 函数
+      recipeMap.forEach( (value, key, map) => {
+        alert(`${key}: ${value}`); // cucumber: 500 etc
+      });
+     #+end_src
+** map与数组的转换
+   
+*** Object.entries() 返回对象的键值对数组
+*** Object.fromEntries() 从键值对数组创建对象
+*** 从对象创建map
+    #+begin_src js
+      let fruitsObj = {
+        apple: 10,
+        banana: 11,
+        orange: 3,
+        tomato: 5
+      };
+      let fruitsEntries = Object.entries(fruitsObj);
+      let fruitsMap = new Map(fruitsEntries);
+
+      fruitsMap.get("orange");
+     #+end_src
+*** 从map创建对象
+    #+begin_src js
+      let hard = "***";
+      let medium = "**-";
+      let easy = "*--";
+      let editorsMap = new Map([
+        ["emacs", hard],
+        ["vim", hard],
+        ["vscode", medium],
+        ["notepad", easy]
+      ])
+      let editorsObj = Object.fromEntries(editorsMap.entries());
+      //let editorsObj = Object.fromEntries(editorsMap);
+      //上面的代码作用也是一样的，因为 Object.fromEntries 期望得到一个可迭代对象作为参数，而不一定是数组。并且 map 的标准迭代会返回跟 map.entries() 一样的键/值对。因此，我们可以获得一个普通对象（plain object），其键/值对与 map 相同。
+
+      for (let editorName in editorsObj) {
+        console.log(`the editor ${editorName} has the hardness of ${editorsObj[editorName]}`);
+      }
+     #+end_src
+* set
+  new Set(iterable) —— 创建一个 set，如果提供了一个 iterable 对象（通常是数组），将会从数组里面复制值到 set 中。
+  set.add(value) —— 添加一个值，返回 set 本身
+  set.delete(value) —— 删除值，如果 value 在这个方法调用的时候存在则返回 true ，否则返回 false。
+  set.has(value) —— 如果 value 在 set 中，返回 true，否则返回 false。
+  set.clear() —— 清空 set。
+  set.size —— 返回元素个数。
+** set的性能优势：Set 的替代方法可以是一个用户数组，用 arr.find 在每次插入值时检查是否重复。但是这样性能会很差，因为这个方法会遍历整个数组来检查每个元素。Set 内部对唯一性检查进行了更好的优化。
+** set迭代!!!
+   set.keys() —— 遍历并返回所有的值（returns an iterable object for values），
+   set.values() —— 与 set.keys() 作用相同，这是为了兼容 Map，
+   set.entries() —— 遍历并返回所有的实体（returns an iterable object for entries）[value, value]，它的存在也是为了兼容 Map。!!!
+*** forEach()
+    语法
+    #+begin_src js
+      let set = new Set(["oranges", "apples", "bananas"]);
+
+      for (let value of set) console.log(value);
+
+      // 与 forEach 相同：
+      set.forEach((value, valueAgain, set) => {
+        console.log(value);
+      });
+     #+end_src
+    forEach 的回调函数有三个参数：一个 value，然后是 同一个值 valueAgain，最后是目标对象。没错，同一个值在参数里出现了两次。
+
+    forEach 的回调函数有三个参数，是为了与 Map 兼容。当然，这看起来确实有些奇怪。但是这对在特定情况下轻松地用 Set 代替 Map 很有帮助，反之亦然。
+** 几个例子
+*** 过滤字谜
+    [[https://zh.javascript.info/task/filter-anagrams][anagrams]]
+    #+begin_src js
+      function aclean(arr) {
+        let map = new Map();
+
+        for (let word of arr) {
+          // 将单词 split 成字母，对字母进行排序，之后再 join 回来
+          let sorted = word.toLowerCase().split('').sort().join(''); // (*)
+          map.set(sorted, word);
+        }
+
+        return Array.from(map.values());
+      }
+
+      let arr = ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"];
+
+      alert( aclean(arr) );
+
+      // 不用map的方式
+
+      function aclean(arr) {
+        let obj = {};
+
+        for (let i = 0; i < arr.length; i++) {
+          let sorted = arr[i].toLowerCase().split("").sort().join("");
+          obj[sorted] = arr[i];
+        }
+
+        return Object.values(obj);
+      }
+
+      let arr = ["nap", "teachers", "cheaters", "PAN", "ear", "era", "hectares"];
+
+      alert( aclean(arr) );
+    #+end_src
+
+* set/map.keys()返回的是可迭代对象不是数组，所以不能用push等方法。如果想用，可以用Array.from()转换后用
+* 获取对象的keys、values、entries：Object.keys(obj), Object.values(obj), Object.entries(obj)，不能直接用obj.values这种形式!!!
+* for...of，forEach遍历的坑
+  如果数组是空的，不会执行遍历。比如我之前做的注册表的例子：
+  如果遍历注册表，如果注册表内没有元素，注册进去。
+  这个例子中，我对注册表遍历。
+  遍历完成后，return 一个true。
+  注册表初始值是{},结果所有结果都返回true，因为空对象for...of是不执行遍历的。
+  所以直接返回true了。
+  这时候要在遍历之前加上一个判断条件，如果注册表是空的，直接返回false。
+* weakMap & weakSet
+** 两个weak类型都只能存储对象键，不能存储primitive类型的值
+** 两个weak类型的方法有限制，无法显示长度，无法迭代（也就无法列出keys和values）
+- weakMap的方法
+  weakMap.get(key)
+  weakMap.set(key, value)
+  weakMap.delete(key)
+  weakMap.has(key)
+- 跟 Set 一样，WeakSet 支持 add，has 和 delete 方法，但不支持 size 和 keys()，并且不可迭代。
+** 用例：额外的数据存储和缓存
+- 假如我们正在处理一个“属于”另一个代码的一个对象，也可能是第三方库，并想存储一些与之相关的数据，那么这些数据就应该与这个对象共存亡 — 这时候 WeakMap 正是我们所需要的利器。
+我们将这些数据放到 WeakMap 中，并使用该对象作为这些数据的键，那么当该对象被垃圾回收机制回收后，这些数据也会被自动清除。
+- 另外一个普遍的例子是缓存：当一个函数的结果需要被记住（“缓存”），这样在后续的对同一个对象的调用时，就可以重用这个被缓存的结果。
+#+begin_src js
+  // 📁 cache.js
+  let cache = new WeakMap();
+
+  // 计算并记结果
+  function process(obj) {
+    if (!cache.has(obj)) {
+      let result = /* calculate the result for */ obj;
+
+      cache.set(obj, result);
+    }
+
+    return cache.get(obj);
+  }
+
+  // 📁 main.js
+  let obj = {/* some object */};
+
+  let result1 = process(obj);
+  let result2 = process(obj);
+
+  // ……稍后，我们不再需要这个对象时：
+  obj = null;
+
+  // 无法获取 cache.size，因为它是一个 WeakMap，
+  // 要么是 0，或即将变为 0
+  // 当 obj 被垃圾回收，缓存的数据也会被清除
+#+end_src
+* 对象的迭代和map/set迭代
+** 语法区别：object的迭代是Object.keys(obj)，map是mapVar.keys()
+** 返回值区别
+   |          | Map        | Object        |
+   |----------+------------+---------------|
+   | 调用语法 | map.keys() | Object.keys() |
+   | 返回值   | 可迭代项   | “真正的数组”        |
+** Object.keys/values/entries 会忽略 symbol 属性
+*** 如果想要得到symbol属性
+- Object.getOwnPropertySymbols，它会返回一个只包含 Symbol 类型的键的数组
+- Reflect.ownKeys(obj)，它会返回 =所有= 键
