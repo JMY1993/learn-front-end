@@ -1583,3 +1583,359 @@ Map 使用 SameValueZero 算法来比较键是否相等。它和严格等于“=
 *** 如果想要得到symbol属性
 - Object.getOwnPropertySymbols，它会返回一个只包含 Symbol 类型的键的数组
 - Reflect.ownKeys(obj)，它会返回 =所有= 键
+* 数组解构赋值
+** 添加额外逗号以忽略不要的元素
+#+begin_src js
+// 不需要第二个元素
+let [firstName, , title] = ["Julius", "Caesar", "Consul", "of the Roman Republic"];
+
+alert( title ); // Consul
+#+end_src
+** 等号右侧可以是任何可迭代对象
+#+begin_src js
+let [a, b, c] = "abc"; // ["a", "b", "c"]
+let [one, two, three] = new Set([1, 2, 3]);
+#+end_src
+** 等号左侧可以使用任何可以被赋值的“东西”
+#+begin_src js
+let user = {};
+[user.name, user.surname] = "Ilya Kantor".split(' ');
+
+alert(user.name); // Ilya
+#+end_src
+** 与Object.entries()联动，进行循环操作
+#+begin_src js
+let user = {
+  name: "John",
+  age: 30
+};
+
+// 循环遍历键—值对
+for (let [key, value] of Object.entries(user)) {
+  alert(`${key}:${value}`); // name:John, then age:30
+}
+#+end_src
+** 与map对象联动，进行循环操作
+#+begin_src js
+let user = new Map();
+user.set("name", "John");
+user.set("age", "30");
+
+for (let [key, value] of user) {
+  alert(`${key}:${value}`); // name:John, then age:30
+}
+#+end_src
+!!!map本身就是可迭代对象，这里不需要使用egMap.entries()，直接使用egMap就可以
+** ...操作符，取得剩余元素
+#+begin_src js
+let [name1, name2, ...rest] = ["Julius", "Caesar", "Consul", "of the Roman Republic"];
+
+alert(name1); // Julius
+alert(name2); // Caesar
+
+// 请注意，`rest` 的类型是数组
+alert(rest[0]); // Consul
+alert(rest[1]); // of the Roman Republic
+alert(rest.length); // 2
+#+end_src
+** 基于复杂表达式的默认值
+默认值等号右边可以是任何复杂表达式，只有没有被赋值的变量等号右侧的表达式会被求值
+#+begin_src js
+// 只会提示输入姓氏
+let [name = prompt('name?'), surname = prompt('surname?')] = ["Julius"];
+
+alert(name);    // Julius（来自数组）
+alert(surname); // 你输入的值
+#+end_src
+* 对象的解构赋值
+** 另外指定变量名
+#+begin_src js
+let options = {
+  title: "Menu",
+  width: 100,
+  height: 200
+};
+
+// { sourceProperty: targetVariable }
+let {width: w, height: h, title} = options;
+
+// width -> w
+// height -> h
+// title -> title
+
+alert(title);  // Menu
+alert(w);      // 100
+alert(h);      // 200
+#+end_src
+** 对象解构赋值默认值语法
+#+begin_src js
+let options = {
+  title: "Menu"
+};
+
+let {width: w = 100, height: h = 200, title} = options;
+
+alert(title);  // Menu
+alert(w);      // 100
+alert(h);      // 200
+#+end_src
+** 剩余模式
+与数组的剩余模式不同，对象解构赋值的rest是一个对象，而数组的rest是一个数组
+#+begin_src js
+let options = {
+  title: "Menu",
+  height: 200,
+  width: 100
+};
+
+// title = 名为 title 的属性
+// rest = 存有剩余属性的对象
+let {title, ...rest} = options;
+
+// 现在 title="Menu", rest={height: 200, width: 100}
+alert(rest.height);  // 200
+alert(rest.width);   // 100
+#+end_src
+** 不使用let时使用解构赋值的坑
+#+begin_src js
+let title, width, height;
+
+// 这一行发生了错误
+{title, width, height} = {title: "Menu", width: 200, height: 100};
+#+end_src
+因为等号前面的大括号被js解释器认为是一个代码块，如果要解决这个问题，只要用括号扩起来就可以了（与箭头函数的例子相同）：
+#+begin_src js
+let title, width, height;
+
+// 现在可以了
+({title, width, height}) = {title: "Menu", width: 200, height: 100};
+#+end_src
+** 嵌套解构（深层解构）
+- 浅层的对象没有被赋值，见下例的items和size
+- 嵌套解构仍然可以重命名变量
+- 嵌套解构的时候等号左侧和右侧必须有相同的结构（指的是层次，不是变量多少）
+#+begin_src js
+  let options = {
+    size: {
+      width: 100,
+      height: 200
+    },
+    items: ["Cake", "Donut"],
+    extra: true
+  };
+
+  // 为了清晰起见，解构赋值语句被写成多行的形式
+  let {
+    size: { // 把 size 赋值到这里
+      width : w,
+      height
+    },
+    items: [item1, item2], // 把 items 赋值到这里
+    title = "Menu" // 在对象中不存在（使用默认值）
+  } = options;
+
+  console.log(title);  // Menu
+  console.log(width);  // 100
+  console.log(height); // 200
+  console.log(item1);  // Cake
+  console.log(item2);  // Donut
+  console.log(items);  //error
+  console.log(w);      //100
+  console.log(size);   //error
+#+end_src
+* 时间（Date类型）
+** 基础语法
+- let testDate = new Date(ms)
+如果不带参数，返回现在的时间
+- let testDate = new Date(str)
+字符串的内容会被自动解析，相当于将使用了Date.parse(str)的返回值带入ms
+!!!所以可以直接用另一个Date类型数据作为参数传给new Date(date)，这在拷贝日期的时候非常有用
+
+- let testDate = new Date(year, month, date, hours, minutes, seconds, ms)
+使用当前时区中的给定组件创建日期。只有前两个参数是必须的
+  + year 必须是四位数：2013 是合法的，98 是不合法的。
+  + month 计数从 0（一月）开始，到 11（十二月）结束。
+  + date 是当月的具体某一天，如果缺失，则为默认值 1。
+  + 如果 hours/minutes/seconds/ms 缺失，则均为默认值 0。
+
+** 时间基准1970-1-1，ms指的是时间基准到指定的时间的毫秒数，1970-1-1之前的时间是负的时间戳
+** 访问日期组件
+  -  getFullYear()
+     获取年份（4 位数）
+  -  getMonth()
+     获取月份，从 0 到 11。
+  -  getDate()
+     获取当月的具体日期，从 1 到 31，这个方法名称可能看起来有些令人疑惑。
+  -  getHours()，getMinutes()，getSeconds()，getMilliseconds()
+     获取相应的时间组件。
+  !!! 是getFullYear()，不是getYear()
+  -  getDay()
+     获取一周中的第几天，从 0（星期日）到 6（星期六）。第一天始终是星期日，在某些国家可能不是这样的习惯，但是这不能被改变。
+!!! 以上的所有方法返回的组件都是基于当地时区的。
+** 访问日期组件的UTC变体
+与当地时区的 UTC 对应项，它们会返回基于 UTC+0 时区的日、月、年等：getUTCFullYear()，getUTCMonth()，getUTCDay()。只需要在 "get" 之后插入 "UTC" 即可。
+** 没有utc变体的访问日期组件
+getTime()
+返回日期的时间戳 —— 从 1970-1-1 00:00:00 UTC+0 开始到现在所经过的毫秒数。
+
+getTimezoneOffset()
+返回 UTC 与本地时区之间的时差，以 =分钟= 为单位：
+** 设置日期组件
+setFullYear(year, [month], [date])
+setMonth(month, [date])
+setDate(date)
+setHours(hour, [min], [sec], [ms])
+setMinutes(min, [sec], [ms])
+setSeconds(sec, [ms])
+setMilliseconds(ms)
+setTime(milliseconds)（使用自 1970-01-01 00:00:00 UTC+0 以来的毫秒数来设置整个日期）
+
+除了setTime(ms)都有utc变体
+
+** 时间的自动校准（快速获得某一日期后的日期）
+*** 时间超出范围会被自动调整
+#+begin_src js
+let date = new Date(2013, 0, 32); // 32 Jan 2013 ?!?
+alert(date); // ……是 1st Feb 2013!
+#+end_src
+*** 快速获得时间
+#+begin_src js
+let date = new Date(2016, 1, 28);
+date.setDate(date.getDate() + 2);
+
+alert( date ); // 1 Mar 2016
+#+end_src
+*** 时间可以设置为负值
+#+begin_src js
+let date = new Date(2016, 0, 2); // 2016 年 1 月 2 日
+
+date.setDate(1); // 设置为当月的第一天
+alert( date );
+
+date.setDate(0); // 天数最小可以设置为 1，所以这里设置的是上一月的最后一天
+alert( date ); // 31 Dec 2015
+#+end_src
+** 日期转化为数字和日期差值
+*** 转化为数字
+#+begin_src js
+let date = new Date();
+alert(+date); // 以毫秒为单位的数值，与使用 date.getTime() 的结果相同
+#+end_src
+*** 时间差值
+日期相减的结果是以ms为单位的时间差
+#+begin_src js
+let start = new Date(); // 开始测量时间
+
+// do the job
+for (let i = 0; i < 100000; i++) {
+  let doSomething = i * i * i;
+}
+
+let end = new Date(); // 结束测量时间
+
+alert( `The loop took ${end - start} ms` );
+#+end_src
+** Date.now()不会创建对象，会创建一个1970-1-1到现在的时间戳（number类型）
+因此它更快，而且不会对垃圾处理造成额外的压力。
+
+这种方法很多时候因为方便，又或是因性能方面的考虑而被采用，例如使用 JavaScript 编写游戏或其他的特殊应用场景。
+** Date.parse()
+字符串的格式应该为：YYYY-MM-DDTHH:mm:ss.sssZ，其中：
+
+- YYYY-MM-DD —— 日期：年-月-日。
+- 字符 "T" 是一个分隔符。
+- HH:mm:ss.sss —— 时间：小时，分钟，秒，毫秒。
+- 可选字符 'Z' 为 +-hh:mm 格式的时区。单个字符 Z 代表 UTC+0 时区。
+- 简短形式也是可以的，比如 YYYY-MM-DD 或 YYYY-MM，甚至可以是 YYYY。
+
+Date.parse(str) 调用会解析给定格式的字符串，并返回时间戳（自 1970-01-01 00:00:00 起所经过的毫秒数）。如果给定字符串的格式不正确，则返回 NaN。
+** performance.now()方法来给出从页面加载开始的以毫秒为单位的微秒数（精确到毫秒的小数点后三位）
+* JSON
+** JSON.stringify()
+会被跳过javascript数据类型
+- 函数、方法
+- Symbol属性
+- undefined数据
+
+!!!不得有循环引用
+*** JSON.stringify(value[, replacer, space])的replacer语法
+#+begin_src js
+let room = {
+  number: 23
+};
+
+let meetup = {
+  title: "Conference",
+  participants: [{name: "John"}, {name: "Alice"}],
+  place: room // meetup 引用了 room
+};
+
+room.occupiedBy = meetup; // room 引用了 meetup
+
+alert( JSON.stringify(meetup, function replacer(key, value) {
+  alert(`${key}: ${value}`);
+  return (key == 'occupiedBy') ? undefined : value;
+}));
+
+/* key:value pairs that come to replacer:
+:             [object Object]
+title:        Conference
+participants: [object Object],[object Object]
+0:            [object Object]
+name:         John
+1:            [object Object]
+name:         Alice
+place:        [object Object]
+number:       23
+*/
+#+end_src
+*** 上例中揭示了JSON.stringify()replacer的转换顺序：
+- 先把对象整个带入，key是空的，value是自身
+- 然后是entries
+- 遇到复杂数据类型，先把数据本身带入，然后深入
+
+如果值被跳过了，return为 undefined。
+*** 自定义toJSON()方法
+- JSON.stringify()遇到自定义toJSON代码时，会直接调用，并把toJSON的返回值作为转换结果（或是相应key的value）
+** JSON.parse()
+*** reviver
+例子：
+#+begin_src js
+let str = '{"title":"Conference","date":"2017-11-30T12:00:00.000Z"}';
+
+let meetup = JSON.parse(str, function(key, value) {
+  if (key == 'date') return new Date(value);
+  return value;
+});
+
+alert( meetup.date.getDate() ); //转换后的date键现在对应的value是Date数据类型了
+#+end_src
+** 例子：排除循环引用
+#+begin_src js
+  let room = {
+    number: 23
+  };
+
+  let meetup = {
+    title: "Conference",
+    occupiedBy: [{name: "John"}, {name: "Alice"}],
+    place: room
+  };
+
+  // 循环引用
+  room.occupiedBy = meetup;
+  meetup.self = meetup;
+
+
+  alert( JSON.stringify(meetup, function replacer(key, value) {
+    return (key != "" && value == meetup) ? undefined : value;
+  }));
+  //这里除了判断value是不是meetup，还要判断是不是空键。因为JSON.stringify()的replacer是从 ~"":meetup~ 开始迭代的 !!!
+  /* 结果应该是：
+  {
+    "title":"Conference",
+    "occupiedBy":[{"name":"John"},{"name":"Alice"}],
+    "place":{"number":23}
+  }
+  ,*/
+#+end_src
