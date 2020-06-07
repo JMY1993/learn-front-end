@@ -1,0 +1,21 @@
+在这里记录前端开发学习笔记，并用git进行版本管理。
+
+* Internet
+
+* JavaScript
+
+* Resources
+
+- Front-end roadmap: [[https://github.com/kamranahmedse/developer-roadmap][developer roadmap]]
+
+- 前端九部: [[https://www.yuque.com/fe9/basic][前端九部 - 入门者手册2019]]
+
+** JavaScript:
+
+- 现代JavaScript教程: [[https://zh.javascript.info/][现代JavaScript教程]]
+
+- JavaScript Garden: [[https://bonsaiden.github.io/JavaScript-Garden/zh/][JavaScript Garden]]
+
+- JS tips: [[https://www.jstips.co/zh_CN/][JS tips]]
+
+- MDN: [[https://developer.mozilla.org/zh-CN/docs/Web/JavaScript][MDN]]
