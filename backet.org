@@ -1336,7 +1336,7 @@ next() 方法返回的结果的格式必须是 {done: Boolean, value: any}，当
     alert(num); // 1, 然后是 2, 3, 4, 5
  #+end_src
 
- ** 显式调用迭代器
+** 显式调用迭代器
  #+begin_src js
  let str = "Hello";
 
@@ -1939,3 +1939,328 @@ alert( meetup.date.getDate() ); //转换后的date键现在对应的value是Date
   }
   ,*/
 #+end_src
+* 输出一个单链表
+#+begin_src js
+  let list = {
+    value: 1,
+    next: {
+      value: 2,
+      next: {
+        value: 3,
+        next: {
+          value: 4,
+          next: null
+        }
+      }
+    }
+  };
+  //正向输出递归解法
+  function printList(list) {
+
+    alert(list.value); // 输出当前元素
+
+    if (list.next) {
+      printList(list.next); // 链表中其余部分同理
+    }
+
+  }
+
+  printList(list);
+  //正向输出循环解法
+  function printList(list) {
+    let tmp = list;
+
+    while (tmp) {
+      alert(tmp.value);
+      tmp = tmp.next;
+    }
+
+  }
+
+  printList(list);
+  //反向输出递归解法
+  function printBackward(list) {
+    if (list.next) {
+      printBackward(list.next)
+    }
+    console.log(list.value);
+  }
+  //反向输出循环解法
+  function printReverseList(list) {
+    let arr = [];
+    let tmp = list;
+
+    while (tmp) {
+      arr.push(tmp.value);
+      tmp = tmp.next;
+    }
+
+    for (let i = arr.length - 1; i >= 0; i--) {
+      alert( arr[i] );
+    }
+  }
+
+  printReverseList(list);
+  //递归解法实际上也是这样做的：它顺着链表，记录每一个嵌套调用里链表的元素（在执行上下文堆栈里），然后输出它们。
+#+end_src
+* rest参数必须放到参数列表最后：function testFun(arg1, arg2, ...argN){}
+* arguments类似rest参数，但是arguments不是数组对象。箭头函数没有arguments
+* spread语法
+** 把数组转换为参数列表
+#+begin_src js
+let arr = [3, 5, 1];
+
+alert( Math.max(...arr) ); // 5（spread 语法把数组转换为参数列表）
+#+end_src
+** 传递多个可迭代对象
+#+begin_src js
+let arr1 = [1, -2, 3, 4];
+let arr2 = [8, 3, -8, 1];
+
+alert( Math.max(...arr1, ...arr2) ); // 8
+#+end_src
+** spread与常规值结合使用
+#+begin_src js
+let arr1 = [1, -2, 3, 4];
+let arr2 = [8, 3, -8, 1];
+
+alert( Math.max(1, ...arr1, 2, ...arr2, 25) ); // 25
+#+end_src
+** 使用 spread 语法来合并数组
+#+begin_src js
+let arr = [3, 5, 1];
+let arr2 = [8, 9, 15];
+
+let merged = [0, ...arr, 2, ...arr2];
+
+alert(merged); // 0,3,5,1,2,8,9,15（0，然后是 arr，然后是 2，然后是 arr2）
+#+end_src
+** spread语法中 ~...~ 后面可以是任何可迭代对象，不只是数组，例如字符串、定义了Symbol.iterator的普通对象等。
+** spread语法和Array.from()的区别：Array.from()可以转化array-like对象，而spread语法不能。所以Array.from()应用范围更广
+** spread语法代替Object.assign()写法更简洁
+*** Object.assign([], arr) <==> [...arr]
+*** Object.assign({}, obj) <==> {...obj}
+* 代码块内声明的变量仅在代码块内可见
+代码块有其自身的词法环境，块之外（或另一个脚本内）的代码访问不到代码块内的变量
+#+begin_src js
+{
+  // 使用在代码块外不可见的局部变量做一些工作
+
+  let message = "Hello"; // 只在此代码块内可见
+
+  alert(message); // Hello
+}
+
+alert(message); // Error: message is not defined
+#+end_src
+所以可以使用代码块隔离变量声明
+* 闭包与v8引擎优化
+理论上当函数可达时，它外部的所有变量也都将存在。
+
+但在实际中，JavaScript 引擎会试图优化它。它们会分析变量的使用情况，如果从代码中可以明显看出有未使用的外部变量，那么就会将其删除。
+
+在 V8（Chrome，Opera）中的一个重要的副作用是，此类变量在调试中将不可用。
+#+begin_src js
+let value = "Surprise!";
+
+function f() {
+  let value = "the closest value";
+
+  function g() {
+    debugger; // 在 console 中：输入 alert(value); Surprise!
+  }
+
+  return g;
+}
+
+let g = f();
+g();
+#+end_src
+
+输出surprise是因为v8引擎优化掉了f()函数内的value变量
+
+#+begin_src js
+let value = "Surprise!";
+
+function f() {
+  let value = "the closest value";
+
+  function g() {
+    let valueCopy = value;
+    debugger; // 在 console 中：输入 alert(value); the closest value
+  }
+
+  return g;
+}
+
+let g = f();
+g();
+#+end_src
+
+这段修改后的代码中使用了f词法环境中的value变量，所以v8引擎没有把value回收。
+
+** 一个变量可见性的坑!!!
+[[https://zh.javascript.info/task/let-scope][变量存在吗？]]
+#+begin_src js
+  //看这段代码
+  let x = 1;
+  function func() {
+    console.log(x);
+    let x = 2;
+  }
+  func();//错误
+
+  /* 从程序执行进入代码块（或函数）的那一刻起，变量就开始进入“未初始化”状态。它一直保持未初始化状态，直至程序执行到相应的 let 语句。
+     换句话说，执行到func的时候，解释器知道本词法环境中有x这个变量，所以不往上找了，但是本词法环境中的变量还没有声明，所以它又找不到了。就会出现错误: Cannot access 'x' before initialization
+  ,*/
+#+end_src
+** 函数大军!!!
+   #+begin_src js
+     function makeFun() {
+       i = 1;
+       let fun = function() {
+         console.log(i);
+       };
+       i++;
+       return fun;
+     }
+     makeFun()();//输出4，因为调用makeFun()()时，makeFun已经执行完毕了，i=4
+   #+end_src
+
+   函数大军的例子：
+   #+begin_src js
+   function makeArmy() {
+  let shooters = [];
+
+  let i = 0;
+  while (i < 10) {
+    let shooter = function() { // shooter 函数
+      alert( i ); // 应该显示其编号
+    };
+    shooters.push(shooter);
+    i++;
+  }
+
+  return shooters;
+}
+
+let army = makeArmy();
+
+army[0](); // 编号为 0 的 shooter 值为 10
+army[5](); // 编号为 5 的 shooter 值也是 10……
+// ... 所有的 shooter 的值都是 10，而不是他们的编号 0, 1, 2, 3...
+   #+end_src
+出现问题的原因与上例makeFun相同，函数执行完毕的时候，i=10，为了解决这个问题，要把i挪到更内部的作用域中：
+#+begin_src js
+function makeArmy() {
+  let shooters = [];
+
+  for (let i = 0; i < 10; i++) { //此时i作用域是for的大括号，生成的每个shooter都记住了其outer作用域中的单独的i值
+    let shooter = function() { // shooter 函数
+      alert( i ); // 应该显示其编号
+    };
+    shooters.push(shooter);
+  }
+
+  return shooters;
+}
+
+let army = makeArmy();
+
+army[0](); // 编号为 0 的 shooter 值为 10
+army[5](); // 编号为 5 的 shooter 值也是 10……
+// ... 所有的 shooter 的值都是 10，而不是他们的编号 0, 1, 2, 3...
+#+end_src
+* var和let
+** var：变量提升，用模仿块级作用域来规避
+** let：不是全局对象的属性
+* 全局对象：window/global/globalThis
+** 使用全局对象来测试对现代语言功能的支持
+   #+begin_src js
+   if (!window.Promise) {
+  alert("Your browser is really old!");
+}
+    #+end_src
+* 函数对象及命名函数表达式
+** 利用函数对象及属性制作计时器，代替闭包计时器
+#+begin_src js
+  function makeCounterC(){
+    //闭包的计时器生成器
+    let counter = 0;
+    return function(){
+      return counter++;
+    }
+
+  }
+
+  function makeCounterE(){
+    //自定义计时器生成器
+    let counterFun = function(){
+      return counterFun.counter++;
+    }
+    counterFun.counter = 0;
+    return counterFun;
+  }
+#+end_src
+!!!二者的不同是自定义属性计时器的counter属性可以在外部修改，直接修改counterE.counter就可以了。
+但是闭包也可以通过自定义参数来达到这个效果：
+#+begin_src js
+  function makeCounter(){
+    let count = 0;
+    return function(option) {
+      switch (option) {
+      case undefined:
+        return count++;
+        break;
+      case "restore":
+        count = 0;
+        return count;
+        break;
+      }
+    }
+  }
+#+end_src
+一样的不是嘛？而且可以通过闭包管理计数变量，防止外部修改。
+* !!!命名函数表达式：函数内部调用自己时非常好的方式
+#+begin_src js
+  let funcName = function realFuncName(helloStr) {
+    if (helloStr) {
+      console.log(helloStr);
+    } else {
+      realFuncName("you have entered nothing babe!");
+    }
+  };
+#+end_src
+** 允许函数通过NFE调用自己
+** NFE外部不可见，只有函数内部才可见
+好处是如果函数被赋值给了别的变量名，不影响内部调用
+** 为counter添加set和decrease方法（闭包法）
+!!!这里的重点是，函数的方法和函数共享一个外部词法环境
+#+begin_src js
+function makeCounter() {
+  let count = 0;
+
+  function counter() {
+    return count++;
+  }
+
+  counter.set = value => count = value;
+
+  counter.decrease = () => count--;
+
+  return counter;
+}
+#+end_src
+** !!任意数量括号求和
+#+begin_src js
+  function sum(numInit) {
+    let accu = numInit;
+    adder.toString = () => accu;
+    function adder(num){
+      accu+=num;
+      return adder;
+    }
+    return adder;
+  }
+#+end_src
+*** !!!这个例子中没有递归！return的是函数adder，但是并没有调用它，这只是闭包，不是递归。
