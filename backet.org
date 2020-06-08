@@ -2264,3 +2264,98 @@ function makeCounter() {
   }
 #+end_src
 *** !!!这个例子中没有递归！return的是函数adder，但是并没有调用它，这只是闭包，不是递归。
+* new Function()语法
+语法：
+#+begin_src js
+let func = new Function ([arg1, arg2, ...argN], functionBody);
+#+end_src
+** 下列三种声明作用相同
+#+begin_src js
+new Function('a', 'b', 'return a + b'); // 基础语法
+new Function('a,b', 'return a + b'); // 逗号分隔
+new Function('a , b', 'return a + b'); // 逗号和空格分隔
+#+end_src
+** !!!new Function语法没有闭包
+#+begin_src js
+function getFunc() {
+  let value = "test";
+
+  let func = new Function('alert(value)');
+
+  return func;
+}
+
+getFunc()(); // error: value is not defined
+#+end_src
+!!!如果我们使用 new Function 创建一个函数，那么该函数的 [[Environment]] 并不指向当前的词法环境，而是指向全局环境。
+例子：
+#+begin_src js
+let a = 1;
+let func = new Funtion("arg", "console.log(arg+a);");
+func(1); //2
+//因为a在全局环境，所以func可以访问
+#+end_src
+* setTimeout()和setInterval()
+语法：
+#+begin_src js
+let timerId = setTimeout(func|code, [delay], [arg1], [arg2], ...)
+#+end_src
+** clearTimeout(timerId)，取消调度。但是timerId的值不会被删除
+** clearInterval(timerId)
+** 周期性调度的两种方式：
+*** 嵌套setTimeout
+#+begin_src js
+  function runCode(){}
+  let timerId = setTimeout(function run(){
+    runCode();
+    let newTimerId = setTimeout(run, 1000);
+  }, 1000);
+#+end_src
+*** setInterval
+** 垃圾回收和 setInterval/setTimeout 回调（callback）
+*** 当一个函数传入 setInterval/setTimeout 时，将为其创建一个内部引用，并保存在调度程序中。这样，即使这个函数没有其他引用，也能防止垃圾回收器（GC）将其回收。
+*** 函数执行完毕后，timerId还在
+*** 零延时实际上不为0
+浏览器会将 setTimeout 或 setInterval 的五层或更多层嵌套调用（调用五次之后）的最小延时限制在 4ms。这是历史遗留问题。
+对于服务端的 JavaScript，就没有这个限制，并且还有其他调度即时异步任务的方式。例如 Node.js 的 setImmediate。因此，这个提醒只是针对浏览器环境的。
+#+begin_src js
+let start = Date.now();
+let times = [];
+
+setTimeout(function run() {
+  times.push(Date.now() - start); // 保存前一个调用的延时
+
+  if (start + 100 < Date.now()) alert(times); // 100 毫秒之后，显示延时信息
+  else setTimeout(run); // 否则重新调度
+});
+
+// 输出示例：
+// 1,1,1,1,9,15,20,24,30,35,40,45,50,55,59,64,70,75,80,85,90,95,100
+#+end_src
+** 例子
+*** 每秒输出一次
+#+begin_src js
+  let timer1s = setTimeout(function printP1s(from, to) {
+    console.log(from);
+    if (from !== to) {
+      setTimeout(printP1s,1000,from+1,to);
+    } else {
+      clearTimeout(timer1s);
+    }
+  },1000,1,10);
+  //用函数抽象后的写法（更简洁）
+  function printNumbers(from, to) {
+    let current = from;
+
+    setTimeout(function go() {
+      alert(current);
+      if (current < to) {
+        setTimeout(go, 1000);
+      }
+      current++;
+    }, 1000);
+  }
+
+  // 用例：
+  printNumbers(5, 10);
+#+end_src
