@@ -1,24 +1,14 @@
 * null undefined 区别
-  :PROPERTIES:
-  :CUSTOM_ID: null-undefined-区别
-  :END:
+null 特殊的 null 值不属于上述任何一种类型，它构成了一个独立的类型，只包含 null 值
 
-null 特殊的 null 值不属于上述任何一种类型,
-它构成了一个独立的类型，只包含 null 值
-
-undefined 特殊值 undefined 和 null 一样自成类型。undefined 的含义是
-未被赋值。如果一个变量已被声明，但未被赋值，那么它的值就是 undefined
+undefined 特殊值 undefined 和 null 一样自成类型。undefined 的含义是未被赋值。如果一个变量已被声明，但未被赋值，那么它的值就是 undefined
 * 如果想要获得一些关于浏览器和其他引擎的兼容性信息，请看：
 
 - http://caniuse.com ------ 每个功能都列有一个支持信息表格
   例如想看哪个引擎支持现代加密（cryptography）函数：http://caniuse.com/#feat=cryptography。
-- https://kangax.github.io/compat-table ------
-  一份列有语言功能以及引擎是否支持这些功能的表格。
+- https://kangax.github.io/compat-table ------ 一份列有语言功能以及引擎是否支持这些功能的表格。
 
 * typeof操作符
-  :PROPERTIES:
-  :CUSTOM_ID: typeof操作符
-  :END:
 
 typeof xx typeof(xx)
 
@@ -33,9 +23,6 @@ typeof xx typeof(xx)
    这不是很正确的做法，但在实际编程中非常方便。
 
 * 类型转换
-  :PROPERTIES:
-  :CUSTOM_ID: 类型转换
-  :END:
 
 - String()
 - Number()
@@ -68,9 +55,6 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
 
 ** 将数字转换为任意进制的字符串,number.toString(base)
 * 运算符和运算元
-  :PROPERTIES:
-  :CUSTOM_ID: 运算符和运算元
-  :END:
 
 - 二元运算符 "+" 和其它
 
@@ -124,14 +108,8 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
 #+END_SRC
 
 * 值的比较
-  :PROPERTIES:
-  :CUSTOM_ID: 值的比较
-  :END:
 
 ** 字符串比较
-   :PROPERTIES:
-   :CUSTOM_ID: 字符串比较
-   :END:
 
 在比较字符串的大小时，JavaScript 会使用Unicode 编码顺序进行判定。
 因此小写字母永远>大写字母。
@@ -144,16 +122,10 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
 
 ** 当对/不同类型/的值进行比较时，JavaScript
 会首先将其转化为数字（number）再判定大小
-   :PROPERTIES:
-   :CUSTOM_ID: 当对不同类型的值进行比较时javascript-会首先将其转化为数字number再判定大小
-   :END:
 
 相当于运行了Number()
 
 ** 对null和undefined比较
-   :PROPERTIES:
-   :CUSTOM_ID: 对null和undefined比较
-   :END:
 
 - null == undefined true
 
@@ -185,17 +157,11 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
     的变量，请按需要/分别检查它的取值情况/。
 
 * if (...) 语句会计算圆括号内的表达式，并将计算结果转换为布尔型。
-  :PROPERTIES:
-  :CUSTOM_ID: if-语句会计算圆括号内的表达式并将计算结果转换为布尔型
-  :END:
 
 相当于对括号内返回值执行=Boolean()= 数字 0、空字符串 ""、null、undefined
 和 NaN 都会被转换成 false。因为他们被称为 “falsy" 值。
 
 * 逻辑运算符
-  :PROPERTIES:
-  :CUSTOM_ID: 逻辑运算符
-  :END:
 
 || ：返回为真值的操作数 && ：返回为假值的操作数 ! ：布尔非运算
 
@@ -221,22 +187,33 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
   #+END_SRC
 
   [[https://zh.javascript.info/task/check-login][使用prompt的登陆验证]]
-  ```js //使用prompt进行登陆校验 'use strict' function loginCheck(){ let
-  userName = prompt("Enter your user name please:"); if (!userName){
-  alert("Canceled!"); return 0; } else if (!(userName === "Admin")) {
-  alert("I don't know you"); return 0; }
+#+begin_src js
+//使用prompt进行登陆校验
+'use strict'
+function loginCheck(){
+let  userName = prompt("Enter your user name please:");
+if (!userName){
+  alert("Canceled!");
+return 0;
+} else if (!(userName === "Admin")) {
+  alert("I don't know you");
+return 0;
+}
 
   let passwd = prompt("Enter your password please:");
 
-  if (!passwd){ alert("Canceled!"); return 0; } else if (!(passwd ==
-  "TheMaster")) { alert("Wrong password"); return 0; }
+  if (!passwd){ alert("Canceled!");
+return 0;
+} else if (!(passwd ==  "TheMaster"))
+{ alert("Wrong password");
+ return 0;
+}
 
-  alert("Welcome!"); return 0; }
-
+  alert("Welcome!");
+return 0;
+ }
+#+end_src
 * 控制结构
-  :PROPERTIES:
-  :CUSTOM_ID: 控制结构
-  :END:
 
 - break
 - continue
@@ -273,77 +250,60 @@ string: 去掉首尾空格后的纯数字字符串中含有的数字。
 
 * for循环的循环体内let定义的变量，在循环体外是为定义的（不可见的）!!!
 * 函数与函数表达式
-  :PROPERTIES:
-  :CUSTOM_ID: 函数与函数表达式
-  :END:
 
 ** 语法区别
-   :PROPERTIES:
-   :CUSTOM_ID: 语法区别
-   :END:
 
 函数的花括号后面不需要=;= 函数表达式的花括号后面需要=;=
 ** 可见性区别
-/严格模式下/，当一个函数声明在一个代码块内时，它在该代码块内的任何位置都是可见的。但在代码块外不可见。
+=严格模式下= ，当一个函数声明在一个代码块内时，它在该代码块内的任何位置都是可见的。但在代码块外不可见。
 如果把函数表达式赋值给一个在代码块外声明的变量时，可以在代码块外调用
 
 注意这里说的代码块是花括号的范围，不是/作用域/的概念。
 
-例子： ```js let age = prompt("What is your age?", 18);
+例子： 
+#+begin_src js
+  let age = prompt("What is your age?", 18);
 
-// 有条件地声明一个函数 if (age < 18) {
+  // 有条件地声明一个函数
+  if (age < 18) {
 
-#+BEGIN_EXAMPLE
-  function welcome() {
-    alert("Hello!");
+    function welcome() {
+      alert("Hello!");
+    }
+
+  } else {
+
+    function welcome() {
+      alert("Greetings!");
+    }
+
   }
-#+END_EXAMPLE
 
-} else {
+  ///稍后使用 welcome(); // Error: welcome is not defined =而=js let
+  age = 16; // 拿 16 作为例子
 
-#+BEGIN_EXAMPLE
-  function welcome() {
-    alert("Greetings!");
+  if (age < 18) {
+    welcome(); //   (运行) // | function welcome() { // |
+    alert("Hello!"); // | 函数声明在声明它的代码块内任意位置都可用 } // | //
+    welcome(); // / (运行)
+
+  } else {
+
+    function welcome() {
+      alert("Greetings!");
+    }
+
   }
-#+END_EXAMPLE
 
-}
+  // 在这里，我们在花括号外部调用函数，我们看不到它们内部的函数声明。
 
-// ......稍后使用 welcome(); // Error: welcome is not defined =而=js let
-age = 16; // 拿 16 作为例子
-
-if (age < 18) { welcome(); //   (运行) // | function welcome() { // |
-alert("Hello!"); // | 函数声明在声明它的代码块内任意位置都可用 } // | //
-| welcome(); // / (运行)
-
-} else {
-
-#+BEGIN_EXAMPLE
-  function welcome() {
-    alert("Greetings!");
-  }
-#+END_EXAMPLE
-
-}
-
-// 在这里，我们在花括号外部调用函数，我们看不到它们内部的函数声明。
-
-welcome(); // Error: welcome is not defined ```
-
+  welcome(); // Error: welcome is not defined
+#+end_src
 * 对象的键
-  :PROPERTIES:
-  :CUSTOM_ID: 对象的键
-  :END:
 
 ** =[key]= 的形式用来表示中间有空格的键名和变量名键名
-   :PROPERTIES:
-   :CUSTOM_ID: key-的形式用来表示中间有空格的键名和变量名键名
-   :END:
 
 ** 计算属性->对象字面量中使用方括号
-   :PROPERTIES:
-   :CUSTOM_ID: 计算属性-对象字面量中使用方括号
-   :END:
 
 #+BEGIN_SRC js
   let fruit = prompt("Which fruit to buy?", "apple");
@@ -356,9 +316,6 @@ welcome(); // Error: welcome is not defined ```
 #+END_SRC
 
 ** 属性值的简写
-   :PROPERTIES:
-   :CUSTOM_ID: 属性值的简写
-   :END:
 
 #+BEGIN_SRC js
   function makeUser(name, age) {
@@ -376,14 +333,8 @@ welcome(); // Error: welcome is not defined ```
 #+END_SRC
 
 ** in操作符左边是属性名（通常是一个带引号的字符串）
-   :PROPERTIES:
-   :CUSTOM_ID: in操作符左边是属性名通常是一个带引号的字符串
-   :END:
 
 ** 检测对象是否含有某个字符串
-   :PROPERTIES:
-   :CUSTOM_ID: 检测对象是否含有某个字符串
-   :END:
 
 - =obj.key === undefined=
 - =key in obj=
@@ -401,9 +352,6 @@ welcome(); // Error: welcome is not defined ```
 #+END_SRC
 
 * for...in 循环，/整数属性/会被进行排序，其他属性则按照创建的顺序显示
-  :PROPERTIES:
-  :CUSTOM_ID: forin-循环整数属性会被进行排序其他属性则按照创建的顺序显示
-  :END:
 
 这里的"整数属性"指的是一个可以在不作任何更改的情况下转换为整数的字符串（包括整数到整数）。
 也就是说，对于key，有Number(key) = key = String( Number(key) )。
@@ -411,30 +359,15 @@ welcome(); // Error: welcome is not defined ```
 比如，如果有obj["1.2"]，1.2不是整数。
 
 * 对象的相等判断，全等===和非全等==没有区别。只有在两个变量引用指向/同一个对象/时，才相等。
-  :PROPERTIES:
-  :CUSTOM_ID: 对象的相等判断全等和非全等没有区别只有在两个变量引用指向同一个对象时才相等
-  :END:
 
 * 对象的浅拷贝Object.assign(obj, [src1, src1, src1,
 ...])，所有的src的属性都拷贝给obj，键名重复的，后面的会覆盖前面的
-  :PROPERTIES:
-  :CUSTOM_ID: 对象的浅拷贝object.assignobj-src1-src1-src1-所有的src的属性都拷贝给obj键名重复的后面的会覆盖前面的
-  :END:
 
 * 对象深拷贝，lodash库，=_.cloneDeep(obj)=
-  :PROPERTIES:
-  :CUSTOM_ID: 对象深拷贝lodash库_.clonedeepobj
-  :END:
 
 ** 深拷贝算法 //：TODO
-   :PROPERTIES:
-   :CUSTOM_ID: 深拷贝算法-todo
-   :END:
 
 * 检查空对象
-  :PROPERTIES:
-  :CUSTOM_ID: 检查空对象
-  :END:
 
 [[https://zh.javascript.info/task/is-empty][检查空对象]]
 
@@ -448,62 +381,29 @@ welcome(); // Error: welcome is not defined ```
 #+END_SRC
 
 * JS垃圾回收（GC）的原理 （描述其原理）
-  :PROPERTIES:
-  :CUSTOM_ID: js垃圾回收gc的原理-描述其原理
-  :END:
 
 从根开始遍历所有根变量的引用再标记这些被引用的变量，再遍历这些标记的变量，直到所有可达（reachable）的引用都被标记。
 标记完成后，删除所有未被标记的变量。
 
 * Symbol类型
-  :PROPERTIES:
-  :CUSTOM_ID: symbol类型
-  :END:
 
 ** let id = Symbol("id") // 没有new，Symbol的参数是一个字符串
-   :PROPERTIES:
-   :CUSTOM_ID: let-id-symbolid-没有newsymbol的参数是一个字符串
-   :END:
 
 ** Symbol类型不会被自动转换为字符串
-   :PROPERTIES:
-   :CUSTOM_ID: symbol类型不会被自动转换为字符串
-   :END:
 
 ** 显示一个Symbol：alert ( id.toString() )==> Symbol(id)
-   :PROPERTIES:
-   :CUSTOM_ID: 显示一个symbolalert-id.tostring-symbolid
-   :END:
 
 ** 显示一个Symbol描述：alert (id.description)==>"id"，返回值是一个string
-   :PROPERTIES:
-   :CUSTOM_ID: 显示一个symbol描述alert-id.descriptionid返回值是一个string
-   :END:
 
 ** for...in循环会跳过Symbol类型的键值对，但Object.assign会复制Symbol类型的键值对
-   :PROPERTIES:
-   :CUSTOM_ID: for...in循环会跳过symbol类型的键值对但object.assign会复制symbol类型的键值对
-   :END:
 
 * 全局Symbol注册表
-  :PROPERTIES:
-  :CUSTOM_ID: 全局symbol注册表
-  :END:
 
 ** Symbol.for()
-   :PROPERTIES:
-   :CUSTOM_ID: symbol.for
-   :END:
 
 ** Symbol.keyFor()
-   :PROPERTIES:
-   :CUSTOM_ID: symbol.keyfor
-   :END:
 
 ** 与Symbol的不同：
-   :PROPERTIES:
-   :CUSTOM_ID: 与symbol的不同
-   :END:
 
 - Symbol 总是不同的值，即使它们有相同的名字。
 - 如果我们希望同名的 Symbol 相等，那么我们应该使用全局注册表
@@ -512,9 +412,6 @@ welcome(); // Error: welcome is not defined ```
   - 使用 Symbol.for 多次调用 key 相同的 Symbol 时，返回的就是同一个Symbol。
 
 * 系统Symbol
-  :PROPERTIES:
-  :CUSTOM_ID: 系统symbol
-  :END:
 
 #+BEGIN_SRC js
   Symbol.hasInstance
@@ -524,34 +421,16 @@ welcome(); // Error: welcome is not defined ```
 #+END_SRC
 
 * 获取Symbol的方法
-  :PROPERTIES:
-  :CUSTOM_ID: 获取symbol的方法
-  :END:
 
 ** Object.getOwnPropertySymbols(obj)
-   :PROPERTIES:
-   :CUSTOM_ID: object.getownpropertysymbolsobj
-   :END:
 
 ** Reflect.ownKeys(obj)
-   :PROPERTIES:
-   :CUSTOM_ID: reflect.ownkeysobj
-   :END:
 
 ** Symbol类型的属性不是百分百隐藏的
-   :PROPERTIES:
-   :CUSTOM_ID: symbol类型的属性不是百分百隐藏的
-   :END:
 
 * 失去this的原因
-  :PROPERTIES:
-  :CUSTOM_ID: 失去this的原因
-  :END:
 
 ** 原理
-   :PROPERTIES:
-   :CUSTOM_ID: 原理
-   :END:
 
 =.=或=[]=的方式调用方法时，会返回一个特殊的引用类型的值：=(base, name, strict)= -
 base 是对象 - name 是属性名 - strict是是否为=use strict=模式
@@ -582,9 +461,6 @@ base 是对象 - name 是属性名 - strict是是否为=use strict=模式
 #+END_SRC
 
 ** 另一个例子：对象字面量中使用this
-   :PROPERTIES:
-   :CUSTOM_ID: 另一个例子对象字面量中使用this
-   :END:
 
 #+BEGIN_SRC js
   let outerObj = {
@@ -601,9 +477,6 @@ base 是对象 - name 是属性名 - strict是是否为=use strict=模式
 #+END_SRC
 
 * 链式调用的实现：每次调用后返回这个对象的自身
-  :PROPERTIES:
-  :CUSTOM_ID: 链式调用的实现每次调用后返回这个对象的自身
-  :END:
 
 #+BEGIN_SRC js
   let ladder = {
@@ -626,52 +499,27 @@ base 是对象 - name 是属性名 - strict是是否为=use strict=模式
 #+END_SRC
 
 * 对象转换
-  :PROPERTIES:
-  :CUSTOM_ID: 对象转换
-  :END:
 
 ** 所有对象在布尔上下文中均为=true=
-   :PROPERTIES:
-   :CUSTOM_ID: 所有对象在布尔上下文中均为true
-   :END:
 
 ** 数值转换发生在对象相减或应用数学函数时（对象相加不是）
-   :PROPERTIES:
-   :CUSTOM_ID: 数值转换发生在对象相减或应用数学函数时对象相加不是
-   :END:
 
 ** 字符串转换通常发生在=alert(obj)=这样一个输出对象或类似的上下文中
-   :PROPERTIES:
-   :CUSTOM_ID: 字符串转换通常发生在alertobj这样一个输出对象或类似的上下文中
-   :END:
 
 ** 对象转换的hint
-   :PROPERTIES:
-   :CUSTOM_ID: 对象转换的hint
-   :END:
 
 *** "string"
-    :PROPERTIES:
-    :CUSTOM_ID: string
-    :END:
 
-#+BEGIN_EXAMPLE
-  ```js
+#+begin_src js
   // 输出
   alert(obj);
 
   // 将对象作为属性键
   anotherObj[obj] = 123;
-  ```
-#+END_EXAMPLE
+#+end_src
 
 *** "number"
-    :PROPERTIES:
-    :CUSTOM_ID: number
-    :END:
-
-#+BEGIN_EXAMPLE
-  ```js
+#+begin_src js
   // 显式转换
   let num = Number(obj);
 
@@ -681,13 +529,9 @@ base 是对象 - name 是属性名 - strict是是否为=use strict=模式
 
   // 小于/大于的比较
   let greater = user1 > user2;
-  ```
-#+END_EXAMPLE
+#+end_src
 
 *** "default"
-    :PROPERTIES:
-    :CUSTOM_ID: default
-    :END:
 在少数情况下发生，当运算符“不确定”期望值的类型时。
 
 例如，二进制加法 + 可用于字符串（连接），也可以用于数字（相加），所以字符串和数字这两种类型都可以。因此，当二元加法得到对象类型的参数时，它将依据 "default" hint 来对其进行转换。
@@ -703,14 +547,8 @@ base 是对象 - name 是属性名 - strict是是否为=use strict=模式
   #+END_SRC
 
 * 对象转换的原理
-    :PROPERTIES:
-    :CUSTOM_ID: 对象转换的原理
-    :END:
 
 ** 调用转换顺序
-     :PROPERTIES:
-     :CUSTOM_ID: 调用转换顺序
-     :END:
 
 调用 obj[Symbol.toPrimitive](hint) — 带有 symbol 键 Symbol.toPrimitive（系统 symbol）的方法，如果这个方法存在的话，
 否则，如果 hint 是 "string" — 尝试 obj.toString() 和 obj.valueOf()，无论哪个存在。
@@ -2012,6 +1850,7 @@ let arr = [3, 5, 1];
 
 alert( Math.max(...arr) ); // 5（spread 语法把数组转换为参数列表）
 #+end_src
+** spread语法接收的参数会被保存在arr，arr是一个真正的数组。这一点与arugments变量不同
 ** 传递多个可迭代对象
 #+begin_src js
 let arr1 = [1, -2, 3, 4];
@@ -2358,4 +2197,503 @@ setTimeout(function run() {
 
   // 用例：
   printNumbers(5, 10);
+#+end_src
+* 函数的透明缓存
+#+begin_src js
+  function cachingDecorator(func) {
+    let cache = new Map();
+    return function(x) {//（5）
+      if (cache.has(x)) {
+        return cache.get(x);
+      }
+
+      let result = func(x); //(1)
+      cache.set(x, result);
+      return result;
+    };
+  }
+  //对于普通函数，上述代码是生效的
+  function testFun(number) {return number+1;}
+  testFun = cachingDecorator(testFun);
+  testFun(5);//6
+  testFun(5);//6 直接调用了cache中的值，不需要计算
+
+  /* 下面分析为什么上述代码对于对象方法是失效的*/
+  let user = {
+    firstName: "jesse",
+    lastName: "yang",
+    getFullName: function(){
+      console.log(this); //新添加一个输出this的语句，方便理解(6)
+      return this.firstName+this.lastName;//(2)
+    }
+  }
+  user.getFullName();//"jesseyang"（3）
+  user.getFullName = cachingDecorator(user.getFullName); //（4）
+  user.getFullName();//NaN
+
+  /*
+    (2）行的代码，调用了this，这个this是方法调用的时候分配的.
+    未经过包装的情况下调用，（3）行的代码设定了user为this，调用结果正常
+
+    经过（4）行的包装后，user.getFullName实际上变成了（5）行返回的函数
+
+    这个函数处理未经cache的值时，会返回(1)行的调用结果。但是（1）行调用的时候没有传递this
+
+    所以回过头，（2）行的代码在这次调用的时候this是undifined，所以发生了错误
+
+    如果我们在getFullName里面添加一个输出this的语句，可以发现：
+
+    - 未经包装的getFullName，输出了user作为this值
+    - 经过包装的getFullName，输出了undefined（浏览器环境输出window，如果没有开启严格模式）
+  ,*/
+
+  /* 下面分析如何改进
+     只要在（1）行的代码调用时匹配合适的this进去就可以了
+     用call方法把this传递进去，所以如果把（1）的语句改成：
+     let result = func.call(user,x);执行结果就正确了
+
+     但是这样失去了包装器的意义，因为如果包装了别的对象的方法，这个对象不是user，那么返回值仍然是错误的
+
+     所以可以在（1）行代码上添加：
+     let that = this;
+     然后修改（1）:let result = func.call(that,x);
+
+     更方便的方法是直接let result = func.call(this,x);
+     因为调用(5)行的函数的时候，this被设定成了点号"."前的对象
+     那么let result = func.call(this.x);中的this就是这个点。
+
+     问题解决
+  ,*/
+  //改进的代码如下：
+  function cachingDecorator(func) {
+    let cache = new Map();
+    return function(x) {//（5）
+      if (cache.has(x)) {
+        return cache.get(x);
+      }
+
+      let result = func.call(this,x); //(1)
+      cache.set(x, result);
+      return result;
+    };
+  }
+#+end_src
+* call借助spread语法和rest语法能够做和apply同样的事，但是apply经过引擎优化，大多数时候速度会更快一些
+* spread语法与apply的区别：apply仅接受array-like，而spread可以接受iterable
+* 多参数的函数包装器
+#+begin_src js
+let worker = {
+  slow(min, max) {
+    alert(`Called with ${min},${max}`);
+    return min + max;
+  }
+};
+
+function cachingDecorator(func, hash) {
+  let cache = new Map();
+  return function() {
+    let key = hash(arguments); // (*)
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+
+    let result = func.apply(this, arguments); // (**)
+
+    cache.set(key, result);
+    return result;
+  };
+}
+
+function hash(args) {
+  return args[0] + ',' + args[1];
+}
+
+worker.slow = cachingDecorator(worker.slow, hash);
+
+alert( worker.slow(3, 5) ); // works
+alert( "Again " + worker.slow(3, 5) ); // same (cached)
+#+end_src
+** map的key只能是一个值，所以做多参数函数包装器的时候，可以用一个hash函数，将多参数组合成一个key存储在map中
+** !!!方法借用
+#+begin_src js
+//arguments不是数组，所以没有数组的方法，但是可以用下列方式借用数组的join方法
+[].join.apply(arguments);
+#+end_src
+我们从常规数组 [].join 中获取（借用）join 方法，并使用 [].join.call 在 arguments 的上下文中运行它。
+
+它为什么有效？
+
+那是因为原生方法 arr.join(glue) 的内部算法非常简单。
+
+从规范中几乎“按原样”解释如下：
+
+让 glue 成为第一个参数，如果没有参数，则使用逗号 ","。
+让 result 为空字符串。
+将 this[0] 附加到 result。
+附加 glue 和 this[1]。
+附加 glue 和 this[2]。
+……以此类推，直到 this.length 项目被粘在一起。
+返回 result。
+因此，从技术上讲，它需要 this 并将 this[0]，this[1] ……等 join 在一起。它的编写方式是故意允许任何类数组的 this 的（不是巧合，很多方法都遵循这种做法）。这就是为什么它也可以和 this=arguments 一起使用。
+* 呼叫转移
+将一个函数的所有参数连同上下文一起传递给另一个函数称作呼叫转移（call forwarding）
+#+begin_src js
+let wrapper = function() {
+  return func.apply(this, arguments);
+};
+#+end_src
+* !!!装饰器例子
+** 间谍装饰者
+创建一个装饰者 spy(func)，它应该返回一个包装器，该包装器将所有对函数的调用保存在其 calls 属性中。
+每个调用都保存为一个参数数组。
+要求
+#+begin_src js
+function work(a, b) {
+  alert( a + b ); // work 是一个任意的函数或方法
+}
+
+work = spy(work);
+
+work(1, 2); // 3
+work(4, 5); // 9
+
+for (let args of work.calls) {
+  alert( 'call:' + args.join() ); // "call:1,2", "call:4,5"
+}
+#+end_src
+
+解：
+#+begin_src js
+function work(a,b){
+    console.log( a + b);
+  }
+
+  function spy(func) {
+    function wrapper(...args) {
+      wrapper.calls.push(`call:${args.join()}`);
+      return func.apply(this, args);
+    }
+      wrapper.calls = [];
+      return wrapper;
+  }
+
+  //测试用例
+  function sum(...args) {
+    return args.reduce((result,number)=>result+=number);
+  }
+
+  let seq = {
+    vec: [1,2,3,4,5,6,7],
+    sum(){
+      return this.vec.reduce((result, number)=>result+=number);
+    }
+  }
+#+end_src
+
+*** 拓展知识：[[http://sinonjs.org/][sinonJS]] 单元测试库
+** 延时装饰者
+将f每次调用延时ms浩渺
+要求：
+#+begin_src js
+function f(x) {
+  alert(x);
+}
+
+// create wrappers
+let f1000 = delay(f, 1000);
+let f1500 = delay(f, 1500);
+
+f1000("test"); // 在 1000ms 后显示 "test"
+f1500("test"); // 在 1500ms 后显示 "test"
+#+end_src
+
+解答：
+#+begin_src js
+  function delay(func, ms) {
+    function delayFunc(...args) {
+      setTimeout(()=>func.apply(this,args),ms);//(1)
+    }
+  }
+
+  //这里有一个问题，实际上返回值不会被收集
+#+end_src
+!!!setTimeout传递this的坑
+普通函数是调用时确定this的，箭头函数是声明时确定this的
+所以（1）行的语句，箭头函数声明时获得了this，即dalayFunc被调用时的this
+如果用function方式传入回调，需要作出一些调整
+#+begin_src js
+function delay(f, ms) {
+
+  return function(...args) {
+    let savedThis = this; // 将 this 存储到中间变量
+    setTimeout(function() {
+      f.apply(savedThis, args); // 在这儿使用它
+    }, ms);
+  };
+
+}
+#+end_src
+
+
+注意这里是如何使用箭头函数的。我们知道，箭头函数没有自己的 this 和 arguments，所以 f.apply(this, arguments) 从包装器中获取 this 和 arguments。
+
+如果我们传递一个常规函数，setTimeout 将调用它且不带参数和 this=window（假设我们在浏览器环境）。
+** 去抖装饰者
+debounce(f, ms) 装饰者的结果应该是一个包装器，该包装器最多允许每隔 ms 毫秒将调用传递给 f 一次。
+
+换句话说，当我们调用 “debounced” 函数时，它保证之后所有在距离上一次调用的时间间隔少于 ms 毫秒的调用都会被忽略。
+
+在实际中，对于那些用于检索/更新某些内容的函数而言，当我们知道在短时间内不会有什么新内容的时候时，debounce 就显得很有用，因此最好不要浪费资源。
+
+要求：
+#+begin_src js
+let f = debounce(alert, 1000);
+
+f(1); // 立即执行
+f(2); // 被忽略
+
+setTimeout( () => f(3), 100); // 被忽略（只过去了 100 ms）
+setTimeout( () => f(4), 1100); // 运行
+setTimeout( () => f(5), 1500); // 被忽略（距上一次运行不超过 1000 ms）
+#+end_src
+
+解答：
+#+begin_src js
+    //错误的解法：
+    function debounce(func, ms) {
+      let lastRunTimeStamp = Date.now();
+      function wrapper(...args) {
+        let now = Date.now()
+        if (now-lastRunTimeStamp >= ms) {
+          lastRunTimeStamp = Date.now();
+          return func.apply(this, args);
+        } else {
+          console.log(`debounced, ${1000 - now + lastRunTimeStamp}ms left.`);
+        }
+      }
+      return wrapper;
+    }
+  f = debounce(console.log, 1000);
+  setTimeout( () => f(1), 1000);
+  setTimeout( () => f(2), 1500);
+  setTimeout( () => f(3), 2000);
+  setTimeout( () => f(4), 2500);
+  setTimeout( () => f(5), 3000);
+  setTimeout( () => f(6), 3500);
+  setTimeout( () => f(7), 4000);
+  setTimeout( () => f(8), 4500);
+  setTimeout( () => f(9), 5000);
+  setTimeout( () => f(10), 5500);
+  setTimeout( () => f(11), 6000);
+  setTimeout( () => f(12), 6500);
+  /*
+     1
+  debounced, 500ms left.
+  3
+  debounced, 501ms left.
+  5
+  debounced, 471ms left.
+  7
+  debounced, 503ms left.
+  9
+  debounced, 495ms left.
+  11
+  debounced, 478ms left.
+  ,*/
+
+  //这个结果和浏览器的结果是不同的，浏览器的1000整数倍ms很多会被debounce掉
+#+end_src
+
+正确解法：
+#+begin_src js
+function debounce(f, ms) {
+
+  let isCooldown = false;
+
+  return function() {
+    if (isCooldown) return;
+
+    f.apply(this, arguments);
+
+    isCooldown = true;
+
+    setTimeout(() => isCooldown = false, ms);
+  };
+
+}
+#+end_src
+** 节流装饰者
+#+begin_src js
+function throttle(f, ms) {
+
+  let isThrottled = false,
+    savedArgs,
+    savedThis;
+
+  function wrapper() {
+
+    if (isThrottled) { // (2)
+      savedArgs = arguments;
+      savedThis = this;
+      return;
+    }
+
+    f.apply(this, arguments); // (1)
+
+    isThrottled = true;
+
+    setTimeout(function() {
+      isThrottled = false; // (3)
+      if (savedArgs) {
+        wrapper.apply(savedThis, savedArgs);
+        savedArgs = savedThis = null;
+      }
+    }, ms);
+  }
+
+  return wrapper;
+}
+#+end_src
+* Object.keys()、for...of都只能遍历对象自身的属性，for...in可以遍历原型链上的属性
+* 原型链的顶端是null
+|                 | null               |                  |
+|-----------------+--------------------+------------------|
+|                 | Object.prototype   |                  |
+| Array.prototype | Function.prototype | Number.prototype |
+| [1,2,3]         | function(args){}   |                5 |
+|-----------------+--------------------+------------------|
+Function.prototype是函数 ~Function()~ 的一个常规属性，new Function()出来的对象有一个__proto__属性指向Function.prototype
+** 每个函数都自带一个.prototype属性。这个属性是一个对象，无论是否被另行指定。这个对象里面带有一个.constructor属性，指向函数自身。
+** 原型的例子
+*** 给函数添加一个f.defer(ms)方法
+在所有函数的原型中添加 defer(ms) 方法，该方法将在 ms 毫秒后运行该函数。
+
+当你完成添加后，下面的代码应该是可执行的：
+#+begin_src js
+function f() {
+  alert("Hello!");
+}
+
+f.defer(1000); // 1 秒后显示 "Hello!"
+#+end_src
+
+解答：
+#+begin_src js
+  Function.prototype.defer = function(ms) {
+    setTimeout(this, ms);
+  };
+
+  function f() {
+    alert("Hello!");
+  }
+
+  f.defer(1000); // shows "Hello!" after 1 sec
+#+end_src
+*** 将装饰者defer()添加到函数
+在所有函数的原型中添加 defer(ms) 方法，该方法返回一个包装器，将函数调用延迟 ms 毫秒。
+
+下面是它应该如何执行的例子：
+#+begin_src js
+  function f(a, b) {
+    alert( a + b );
+  }
+
+  f.defer(1000)(1, 2); // 1 秒后显示 3
+#+end_src
+
+解答：!!!教材的标准答案适用于对象的方法
+#+begin_src js
+  Function.prototype.defer = function(ms) {
+    return (...args) => setTimeout(this, ms, ...args);
+  }
+
+  // 教程的标准答案
+
+  Function.prototype.defer = function(ms) {
+    let f = this;
+    return function(...args) {
+      setTimeout(() => f.apply(this, args), ms);
+    }
+  };
+
+  // check it
+  function f(a, b) {
+    alert( a + b );
+  }
+
+  f.defer(1000)(1, 2); // 1 秒后显示 3
+
+  // 教程标准答案适用于对象方法
+
+  let user = {
+    name: "John",
+    sayHi() {
+      alert(this.name);
+    }
+  }
+
+  user.sayHi = user.sayHi.defer(1000);
+
+  user.sayHi();
+#+end_src
+* 原型方法
+** Object.create(proto[, descriptors])
+!!!真正的浅拷贝（完全一致）
+#+begin_src js
+  // 完全相同的对象 obj 的浅拷贝
+  let clone = Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));
+#+end_src
+** Object.getPrototypeOf(obj)
+** Object.setPrototypeOf(obj,proto)
+以上两项相当于__proto__的访问器
+
+** "Very plain" objects（纯白对象）
+__proto__属性很特别：它必须是对象或者 null。字符串不能成为 prototype。
+这个例子：
+#+begin_src js
+let obj = {};
+
+let key = prompt("What's the key?", "__proto__");
+obj[key] = "some value";
+
+alert(obj[key]); // [object Object]，并不是 "some value"！
+#+end_src
+
+我们可能会对对象进行赋值操作，然后原型可能就被更改了。结果，可能会导致完全意想不到的结果。
+
+最可怕的是 —— 通常开发者完全不会考虑到这一点。这让此类 bug 很难被发现，甚至变成漏洞，尤其是在 JavaScript 被用在服务端的时候。
+
+为默认情况下为函数的 toString 以及其他内建方法执行赋值操作，也会出现意想不到的结果。
+
+*** 使用map可以解决这个问题
+*** 创建纯白对象（very plain objects）
+#+begin_src js
+let obj = Object.create(null);
+
+let key = prompt("What's the key?", "__proto__");
+obj[key] = "some value";
+
+alert(obj[key]); // "some value"
+#+end_src
+** 遍历对象的属性的方法
+Object.keys(obj) / Object.values(obj) / Object.entries(obj) —— 返回一个可枚举的由自身的字符串属性名/值/键值对组成的数组。
+Object.getOwnPropertySymbols(obj) —— 返回一个由自身所有的 symbol 类型的键组成的数组。
+Object.getOwnPropertyNames(obj) —— 返回一个由自身所有的字符串键组成的数组。
+Reflect.ownKeys(obj) —— 返回一个由自身所有键组成的数组。
+obj.hasOwnProperty(key)：如果 obj 拥有名为 key 的自身的属性（非继承而来的），则返回 true。
+** polyfill Array.prototype.repeat的例子
+#+begin_src js
+  if (!String.prototype.repeat) { // 如果这儿没有这个方法
+    // 那就在 prototype 中添加它
+
+    String.prototype.repeat = function(n) {
+      // 重复传入的字符串 n 次
+
+      // 实际上，实现代码比这个要复杂一些（完整的方法可以在规范中找到）
+      // 但即使是不够完美的 polyfill 也常常被认为是足够好的
+      return new Array(n + 1).join(this);
+    };
+  }
+
+  alert( "La".repeat(3) ); // LaLaLa
 #+end_src
