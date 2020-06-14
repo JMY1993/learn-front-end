@@ -360,9 +360,7 @@ return 0;
 
 * 对象的相等判断，全等===和非全等==没有区别。只有在两个变量引用指向/同一个对象/时，才相等。
 
-* 对象的浅拷贝Object.assign(obj, [src1, src1, src1,
-...])，所有的src的属性都拷贝给obj，键名重复的，后面的会覆盖前面的
-
+* 对象的浅拷贝Object.assign(obj, [src1, src1, src1,...])，所有的src的属性都拷贝给obj，键名重复的，后面的会覆盖前面的
 * 对象深拷贝，lodash库，=_.cloneDeep(obj)=
 
 ** 深拷贝算法 //：TODO
@@ -2882,4 +2880,69 @@ let rabbit = {
 rabbit.eat();  // 错误调用 super（因为这里没有 [[HomeObject]]）
 #+end_src
 * 字符串的数组的replace方法
-* 类继承与类扩展
+* 静态属性和静态方法，用static声明。静态方法中的this指的是类本身（类函数本身）
+* 扩展内建数组
+#+begin_src js
+class PowerArray extends Array {
+  isEmpty() {
+    return this.length === 0;
+  }
+
+  // 内建方法将使用这个作为 constructor
+  static get [Symbol.species]() {
+    return Array;
+  }
+}
+let arr = new PowerArray(1, 2, 5, 10, 50);
+alert(arr.isEmpty()); // false
+
+// filter 使用 arr.constructor[Symbol.species] 作为 constructor 创建新数组
+let filteredArr = arr.filter(item => item >= 10);
+
+// filteredArr 不是 PowerArray，而是 Array
+alert(filteredArr.isEmpty()); // Error: filteredArr.isEmpty is not a function
+#+end_src
+** 使用arr.filter()时，内部使用的是arr.constructor来创建新的结果数组
+** !!!如果希望扩展内建数组返回原生数组时，使用Symbol.species来指定constructor
+* 内建类没有静态方法继承
+Array 和 Data 都继承自 Object，所以它们的实例都有来自 Object.prototype 的方法。但 ~Array.[[prototype]]~ 并不指向 Object，所以它们没有例如 Array.keys()（或 Data.keys()）这些静态方法。
+* 高级类型检查
+类型检查的几种方式：
+|             | 用于                                                       | 返回值     |
+|-------------+------------------------------------------------------------+------------|
+| typeof      | 原始数据类型                                               | string     |
+| {}.toString | 原始数据类型，内建对象，包含 Symbol.toStringTag 属性的对象 | string     |
+| instanceof  | 对象                                                       | true/false |
+** 使用Object.prototype.toString来揭示类型
+与直接使用obj.toString的区别是：有时候我们会自定义对象的toString的返回值，这时候使用obj.toString()返回的就不是类型信息了。
+这时候可以使用 ~Object.prototype.toString.call(obj)~ 来返回对象的类型，不但适用于对象类型，也适用于基础类型：
+#+begin_src js
+let s = Object.prototype.toString;
+
+alert( s.call(123) ); // [object Number]
+alert( s.call(null) ); // [object Null]
+alert( s.call(alert) ); // [object Function]
+#+end_src
+** !!!自定义对象类型tag：Symbol.toStringTag
+#+begin_src js
+let user = {
+  [Symbol.toStringTag]: "User"
+};
+
+alert( {}.toString.call(user) ); // [object User]
+#+end_src
+
+返回值是一个string，意味着可以用正则或者字符串方法来提取相对应的对象类型的字符串值
+** 一个instanceof无效的例子
+#+begin_src js
+function A() {}
+function B() {}
+
+A.prototype = B.prototype = {};
+
+let a = new A();
+
+alert( a instanceof B ); // true
+#+end_src
+!!!因为instanceof操作符只关心prototype，不关心构造函数
+* mixin模式，实现类似多重继承的功能，使用Object.assign(obj,mixin)的语法
