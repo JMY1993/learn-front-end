@@ -2632,7 +2632,7 @@ f.defer(1000); // 1 秒后显示 "Hello!"
     }
   }
 
-  user.sayHi = user.sayHi.defer(1000);
+  user.sayHi = user.sayHi.defer(1000);//这里要重新定义一下user.sayHi，不然传不进去this
 
   user.sayHi();
 #+end_src
@@ -2697,3 +2697,189 @@ obj.hasOwnProperty(key)：如果 obj 拥有名为 key 的自身的属性（非�
 
   alert( "La".repeat(3) ); // LaLaLa
 #+end_src
+
+* class语法不仅仅是语法糖
+** class创建的函数自动具有特殊的内部属性标记 [[FunctionKind]]:"classConstructor"，且class创建的函数必须通过new调用
+** 类方法不可枚举，通过class创建的类的方法的enumerable descriptor被自动设为false（无法通过for...in枚举）
+** 类构造中的所有代码自动进入严格模式，自动带有'use strict'
+* 类表达式
+** 类表达式不在原型中，它是为每个实例创建的（但方法在原型中）
+** 类表达式可以有一个命名，类似命名函数表达式
+* !!!使用类字段制作绑定方法
+问题：类方法在被setTimeout调用时会发生丢失this的情况，本质是因为setTimeout调用方法时，相当于把函数赋值给了setTimeout的参数，这样会丢失this。在传统方法中，可以使用以下两种方式解决问题：
+实例代码如下：
+#+begin_src js
+  class Button {
+    constructor(value) {
+      this.value = value;
+    }
+
+    click() {
+      alert(this.value);
+    }
+  }
+
+  let button = new Button("hello");
+
+  setTimeout(button.click, 1000); // undefined
+#+end_src
+1. 传入包装函数
+#+begin_src js
+  setTimeout(()=>button.click(),1000); //hello
+#+end_src
+
+2. 直接在类声明中绑定方法this
+#+begin_src js
+  class Button {
+    constructor(value) {
+      this.value = value;
+      this.click = this.click.bind(this);
+    }
+
+    click() {
+      alert(this.value);
+    }
+  }
+#+end_src
+
+类语法带来了第三种this绑定的方式
+#+begin_src js
+  class Button {
+    constructor(value) {
+      this.value = value;
+    }
+    click = () => {        //这里用类表达式创建方法，所以每个Button对象都在创建时被创建了一个独立的click方法
+      alert(this.value);   //这里this被直接与每个Button实例绑定了。因为箭头函数的this是在声明时创建的，所以实例创建的时候this已经指向了该实例，所以无需担心作为setTimeout这种函数的参数时会丢失this
+    }
+  }
+#+end_src
+** 例子：重写Clock类
+#+begin_src js
+class Clock {
+  constructor({ template }) {
+    this.template = template;
+  }
+
+  render() {
+    let date = new Date();
+
+    let hours = date.getHours();
+    if (hours < 10) hours = '0' + hours;
+
+    let mins = date.getMinutes();
+    if (mins < 10) mins = '0' + mins;
+
+    let secs = date.getSeconds();
+    if (secs < 10) secs = '0' + secs;
+
+    let output = this.template
+      .replace('h', hours)
+      .replace('m', mins)
+      .replace('s', secs);
+
+    console.log(output);
+  }
+
+  stop() {
+    clearInterval(this.timer);
+  }
+
+  start() {
+    this.render();
+    this.timer = setInterval(() => this.render(), 1000);
+  }
+}
+
+
+let clock = new Clock({template: 'h:m:s'});
+clock.start();
+#+end_src
+* 类继承
+语法：
+#+begin_src js
+  class Animal {
+    constructor(name="Taishan") {
+      this.name = name;
+    }
+    roar() {
+      console.log(`My name is ${this.name}`);
+    }
+  }
+
+  //新建一个子类 Rabbit
+  class Rabbit extends Animal {
+    constructor(name="TuBage", color="White"){
+      super(name); //在this之前调用super；
+      this.color = color;
+    }
+    roar() { //重写roar方法
+      super.roar(); //调用父类方法
+      console.log(`And my fur is ${this.color}`); //添加新的行为
+    }
+  }
+#+end_src
+** !!!extends语法的两个影响
+*** 将子类prototype.__proto__设定为父类.prototype
+*** 子类的.__proto__设定为父类
+#+begin_src js
+class Plant{}
+class Tree extends Plant {}
+Tree.prototype.__proto__ === Plant.prototype; //true
+Tree.__proto__ === Plant; //true
+
+//如果是function Plant(){}语法，Tree.__proto__ === Function.prototype // true
+#+end_src
+*** 所以如果class语法extend了Object，那么class声明的类可以直接调用Object.keys()等静态方法
+* ~[[HomeObject]]~ 属性
+凡是调用了super的方法，该方法会被自动生成一个 ~[[HomeObject]]~ 属性，方法在内部的 ~[[HomeObject]]~ 属性中记住了它们的类/对象。这就是 super 如何解析父方法的。
+!!!因此，将一个带有 super 的方法从一个对象复制到另一个对象是不安全的。
+#+begin_src js
+let animal = {
+  sayHi() {
+    console.log(`I'm an animal`);
+  }
+};
+
+// rabbit 继承自 animal
+let rabbit = {
+  __proto__: animal,
+  sayHi() {
+    super.sayHi();
+  }
+};
+
+let plant = {
+  sayHi() {
+    console.log("I'm a plant");
+  }
+};
+
+// tree 继承自 plant
+let tree = {
+  __proto__: plant,
+  sayHi: rabbit.sayHi // (*)
+};
+
+tree.sayHi();  // I'm an animal (?!?)
+#+end_src
+
+* 若要使用super，方法必须明确指定为method，而不是method:function(){}
+在下面的例子中，使用非方法（non-method）语法进行了比较。未设置 [[HomeObject]] 属性，并且继承无效：
+#+begin_src js
+let animal = {
+  eat: function() { // 这里是故意这样写的，而不是 eat() {...
+    // ...
+  }
+};
+
+let rabbit = {
+  __proto__: animal,
+  eat: function() {
+    super.eat();
+  }
+};
+
+rabbit.eat();  // 错误调用 super（因为这里没有 [[HomeObject]]）
+#+end_src
+* 字符串的数组的replace方法
+* 类继承与类扩展
