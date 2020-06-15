@@ -3062,3 +3062,157 @@ try {
   }
 }
 #+end_src
+* promise语法
+#+begin_src js
+  let promise = new Promise(function(resolve, reject) {
+    //producer code;
+    if (everything Ok) {
+      resolve(result);
+    } else {
+      reject(err);
+    }
+  });
+
+  promise.then(
+    successFn(result); // result是Promise的resolve的参数
+    failedFn(err);  // err是Promise的reject的参数
+  )
+    .catch(
+      failedFn(err);
+    )
+    .finally(
+      clearupCode(); //不会被传入参数
+    );
+#+end_src
+!!! 它的参数 resolve 和 reject 是由 JavaScript 自身提供的回调。我们的代码仅在 executor 的内部。换句话说，resolve和reject不能更改，这个名字是固定的。
+!!! promise的then/catch/finally执行与否只与promise对象的state有关，如果state是settled（无论是resolved还是rejected），then都会立即执行。
+如果为一个已经settled的promise添加上述消费者方法，这些方法中的代码都会立即执行。
+* promise链：promise的then会返回一个新的Promise对象。then回调函数的return值会成为新的Promise对象的settle值
+* !!!setTimeout 与 promise
+#+begin_src js
+Promise.resolve('foo')
+  // 1. Receive "foo", concatenate "bar" to it, and resolve that to the next then
+  .then(function(string) {
+    return new Promise(function(resolve, reject) {
+      setTimeout(function() {
+        string += 'bar';
+        resolve(string);                          //**
+      }, 1);
+    });
+  })
+  // 2. receive "foobar", register a callback function to work on that string
+  // and print it to the console, but not before returning the unworked on
+  // string to the next then
+  .then(function(string) {
+    setTimeout(function() {
+      string += 'baz';
+      console.log(string);
+    }, 1)                                        //（*）
+    return string;
+  })
+  // 3. print helpful messages about how the code in this section will be run
+  // before the string is actually processed by the mocked asynchronous code in the
+  // previous then block.  
+  .then(function(string) {
+    console.log("Last Then:  oops... didn't bother to instantiate and return " +
+                "a promise in the prior then so the sequence may be a bit " +
+                "surprising");
+
+    // Note that `string` will not have the 'baz' bit of it at this point. This 
+    // is because we mocked that to happen asynchronously with a setTimeout function
+    console.log(string);
+  });
+
+// logs, in order:
+// Last Then: oops... didn't bother to instantiate and return a promise in the prior then so the sequence may be a bit surprising
+// foobar
+// foobarbaz
+#+end_src
+
+then的回调函数中执行的实际上是一个同步过程。意味着，在then的回调函数执行时，其中的setTimeout跟普通同步过程是一样的。setTimeout后面的代码不会等待setTimeout执行完成才执行。(*)行代码后面的return在 ~string+='baz'~ 之前就发生了。
+
+如果在then语句中有setTimeout（计划调用）类过程，要新建并返回一个promise，在这个新的promise中做计划调用。（**）行代码的做法，使得后续的then等待其resolve后才执行。
+
+下面的代码构建了异步行为链：
+#+begin_src js
+new Promise(function(resolve, reject) {
+
+  setTimeout(() => resolve(1), 1000);
+
+}).then(function(result) {
+
+  alert(result); // 1
+
+  return new Promise((resolve, reject) => { // (*)
+    setTimeout(() => resolve(result * 2), 1000);
+  });
+
+}).then(function(result) { // (**)
+
+  alert(result); // 2
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(result * 2), 1000);
+  });
+
+}).then(function(result) {
+
+  alert(result); // 4
+
+});
+#+end_src
+
+返回的promise的resolve值是下一个then的回调的参数。
+* !!!fetch有两段
+- 第一段返回一个response（promise对象），当远程服务器返回 header（是在 全部响应加载完成前）时
+- 在下一个then中调用response.text()方法=>返回一个promise对象，用json字符串resolve
+或response.json()方法=>返回一个promise对象，是JSON.parse()后的对象
+** !!!一个加载github头像的例子
+#+begin_src js
+// 发送一个对 user.json 的请求
+fetch('/article/promise-chaining/user.json')
+  // 将其加载为 JSON
+  .then(response => response.json())
+  // 发送一个到 GitHub 的请求
+  .then(user => fetch(`https://api.github.com/users/${user.name}`))
+  // 将响应加载为 JSON
+  .then(response => response.json())
+  // 显示头像图片（githubUser.avatar_url）3 秒（也可以加上动画效果）
+  .then(githubUser => {                        //(**)
+    let img = document.createElement('img');
+    img.src = githubUser.avatar_url;
+    img.className = "promise-avatar-example";
+    document.body.append(img);
+
+    setTimeout(() => img.remove(), 3000); // (*)
+  });
+#+end_src
+这段代码的问题在上文中setTimeout和promise的探讨中说过了，（**）中的代码有一个异步过程，如果想要对加载头像后的状态进行处理实际上是做不到的。应该做如下修改（*）行的修改：
+#+begin_src js
+  fetch('/article/promise-chaining/user.json')
+    .then(response=>response.json())
+    .then(user=>fetch(`https://api.github.com/users/${user.name}`))
+    .then(response=>response.json())
+    .then(githubUser=> new Promise(resolve=>{
+        let img = document.createElement('img');
+        img.src = githubUser.avatar_url;
+        img.className = "promise-avatar-example";
+        document.body.append(img);
+
+      setTimeout(() => {
+        img.remove();
+        resolve(githubUser);
+      }, 3000);
+      }))
+    .then(githubUser => alert(`Finished showing ${githubUser.name}`));
+#+end_src
+** then与.then.catch的区别
+#+begin_src js
+promise
+  .then(f1)
+  .catch(f2);
+//vs
+promise.then(f1,f2);
+
+//上面两种写法有区别。第一种写法如果有error，会被catch处理。而第二种不会。因为error是沿着链传递的，第二种没有链
+#+end_src
