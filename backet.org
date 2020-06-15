@@ -393,7 +393,7 @@ return 0;
 
 ** 显示一个Symbol描述：alert (id.description)==>"id"，返回值是一个string
 
-** for...in循环会跳过Symbol类型的键值对，但Object.assign会复制Symbol类型的键值对
+** for...in循环会跳过Symbol类型的键值对，但!!!Object.assign会复制Symbol类型的键值对
 
 * 全局Symbol注册表
 
@@ -2946,3 +2946,119 @@ alert( a instanceof B ); // true
 #+end_src
 !!!因为instanceof操作符只关心prototype，不关心构造函数
 * mixin模式，实现类似多重继承的功能，使用Object.assign(obj,mixin)的语法
+* try...catch仅对运行时的错误有效，无法处理(parse-time)解析时间错误
+* try...catch同步工作，对包裹的scheduled代码无法处理
+* error对象：name，message，stack
+* throw抛出错误，会被后面的catch捕获
+* catch块中可以通过包裹if else语句，重新抛出错误
+* finally无论如何会被执行，即使try...catch中有return语句，finally也会执行
+** !!!一个finally的优点的例子
+对比以下两种例子：
+#+begin_src js
+try {
+  work work
+} catch (e) {
+  handle errors
+} finally {
+  cleanup the working space
+}
+//将cleanup语句放到末尾
+try {
+  work work
+} catch (e) {
+  handle errors
+}
+cleanup the working space
+#+end_src
+有什么区别呢？
+区别在于：如果try...catch语句被函数包裹，finally语句保证了cleanup的执行
+finally 子句适用于 try..catch 的 任何 出口。这包括显式的 return，rethrow等行为。
+这种情况下，如果没有把cleanup code包裹在finally中，cleanup是不会执行的
+* try...catch...finally中生命的变量是局部变量，只在对应的块中可见
+* 全局error的作用通常是将错误信息发送给开发者
+* !!!class语法的constructor有name属性
+应用：简化error类声明时对于name字段的赋值
+
+直接继承下去，每个子类都可以自动命名
+#+begin_src js
+class MyError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+class ValidationError extends MyError { }
+
+class PropertyRequiredError extends ValidationError {
+  constructor(property) {
+    super("No property: " + property);
+    this.property = property;
+  }
+}
+
+// name 是对的
+alert( new PropertyRequiredError("field").name ); // PropertyRequiredError
+#+end_src
+* 包装异常
+包装异常是一项广泛应用的技术：用于处理低级别异常并创建高级别 error 而不是各种低级别 error 的函数。在上面的示例中，低级别异常有时会成为该对象的属性，例如 err.cause，但这不是严格要求的。
+以下代码将syntax error和validation error（低级别错误）包装进了ReadError中，
+#+begin_src js
+class ReadError extends Error {
+  constructor(message, cause) {
+    super(message);
+    this.cause = cause;
+    this.name = 'ReadError';
+  }
+}
+
+class ValidationError extends Error { /*...*/ }
+class PropertyRequiredError extends ValidationError { /* ... */ }
+
+function validateUser(user) {
+  if (!user.age) {
+    throw new PropertyRequiredError("age");
+  }
+
+  if (!user.name) {
+    throw new PropertyRequiredError("name");
+  }
+}
+
+function readUser(json) {
+  let user;
+
+  try {
+    user = JSON.parse(json);
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      throw new ReadError("Syntax Error", err);
+    } else {
+      throw err;
+    }
+  }
+
+  try {
+    validateUser(user);
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      throw new ReadError("Validation Error", err);
+    } else {
+      throw err;
+    }
+  }
+
+}
+
+try {
+  readUser('{bad json}');
+} catch (e) {
+  if (e instanceof ReadError) {
+    alert(e);
+    // Original error: SyntaxError: Unexpected token b in JSON at position 1
+    alert("Original error: " + e.cause);
+  } else {
+    throw e;
+  }
+}
+#+end_src
