@@ -3084,10 +3084,20 @@ try {
       clearupCode(); //不会被传入参数
     );
 #+end_src
+!!! .then()返回的promise的状态是resolved
+#+begin_src js
+let promise = new Promise((resolve,reject)=>reject("err")); //promise的state是rejected
+let promise1 = promise.then(null, str => {cosole.log(str);return str;});  //promise1的state是resolved
+let promise2 = promise1.catch(console.log);                 //控制台输出undefined
+//如果then的?onrejected没有rethrow error，下面的catch也接不到这个err,如果再链接一个then，新的then的?onfullfilled会接到这个返回值
+//如果then的?onrejected rethrow了一个error，下面的catch会接到这个err
+#+end_src
 !!! 它的参数 resolve 和 reject 是由 JavaScript 自身提供的回调。我们的代码仅在 executor 的内部。换句话说，resolve和reject不能更改，这个名字是固定的。
 !!! promise的then/catch/finally执行与否只与promise对象的state有关，如果state是settled（无论是resolved还是rejected），then都会立即执行。
 如果为一个已经settled的promise添加上述消费者方法，这些方法中的代码都会立即执行。
-* promise链：promise的then会返回一个新的Promise对象。then回调函数的return值会成为新的Promise对象的settle值
+* promise链：promise的then会返回一个新的Promise对象。then回调函数的return值会成为新的Promise对象的settle值。
+** 传递result或者error，finally会直接传递，它的回调不需要参数
+** finally 并不是意味着要处理 promise 的结果。所以它将结果传递了下去。（也不需要result）
 * !!!setTimeout 与 promise
 #+begin_src js
 Promise.resolve('foo')
@@ -3216,3 +3226,140 @@ promise.then(f1,f2);
 
 //上面两种写法有区别。第一种写法如果有error，会被catch处理。而第二种不会。因为error是沿着链传递的，第二种没有链
 #+end_src
+* promise的隐式try...catch
+下面两段代码工作上完全相同
+#+begin_src js
+new Promise((resolve, reject) => {
+  throw new Error("Whoops!");  //*
+}).catch(alert); // Error: Whoops!
+#+end_src
+
+#+begin_src js
+new Promise((resolve, reject) => {
+  reject(new Error("Whoops!"));
+}).catch(alert); // Error: Whoops!
+#+end_src
+可以理解为throw new Error周围有一个try...catch，并将其变为reject(new Error);
+然后reject的err被后面链接的catch捕获
+
+所有的错误都会被捕获，例如：
+#+begin_src js
+new Promise((resolve, reject) => {
+  resolve("ok");
+}).then((result) => {
+  blabla(); // 没有这个函数
+}).catch(alert); // ReferenceError: blabla is not defined
+#+end_src
+* then/catch中也可以throw error，并且被最近的catch捕获
+* !!! unhandledrejection事件处理程序
+#+begin_src js
+window.addEventListener('unhandledrejection', function(event) {
+  // 这个事件对象有两个特殊的属性：
+  alert(event.promise); // [object Promise] - 生成该全局 error 的 promise
+  alert(event.reason); // Error: Whoops! - 未处理的 error 对象
+ //遇到全局error的处理语句
+ //...
+});
+
+new Promise(function() {
+  throw new Error("Whoops!");
+}); // 没有用来处理 error 的 catch
+#+end_src
+* Promise类的静态方法all/allSettled/race/resolve/reject
+** 批量执行异步任务Promise.all()/Promise.allSettled()
+语法：
+接受一个promise对象构成的的数组，返回一个promise，其resolve是每个promise对象resolve结果组成的数组
+!!!结果数组中元素的顺序与其在源 promise 中的顺序相同。即使第一个 promise 花费了最长的时间才 resolve，但它仍是结果数组中的第一个。
+*** !!!如果任意一个 promise 被 reject，由 Promise.all 返回的 promise 就会立即 reject，并且带有的就是这个 error。
+
+如果其中一个 promise 被 reject，Promise.all 就会立即被 reject，完全忽略列表中其他的 promise。它们的结果也被忽略。
+*** !!!Promise.all()/Promise.allSettled()可以接受一个iterable对象，如果任意一个元素不是promise对象，它将被“原样”返回（as is）
+*** Promise.allSettled()及其polyfill
+Promise.allSettled 等待所有的 promise 都被 settle，无论结果如何。结果数组具有：
+
+{status:"fulfilled", value:result} 对于成功的响应，
+{status:"rejected", reason:error} 对于 error。
+
+#+begin_src js
+let urls = [
+  'https://api.github.com/users/iliakan',
+  'https://api.github.com/users/remy',
+  'https://no-such-url'
+];
+
+Promise.allSettled(urls.map(url => fetch(url)))
+  .then(results => { // (*)
+    results.forEach((result, num) => {
+      if (result.status == "fulfilled") {
+        alert(`${urls[num]}: ${result.value.status}`);
+      }
+      if (result.status == "rejected") {
+        alert(`${urls[num]}: ${result.reason}`);
+      }
+    });
+  });
+#+end_src
+!!!Promise.allSettled() polyfill
+因为这个方法是新加入的特性，不被所有环境支持，如果没有这个方法，可以polyfill一个：
+#+begin_src js
+  //这是我的代码
+  if (!Promise.allSettled) {
+    Promise.allSettled = function(promises) {
+      return Promise.all(promises.map(promise => promise.then(
+        value => ({
+          status: "fulfilled",
+          value
+        }),
+        reason => ({
+          status: "rejected",
+          reason
+        }))));
+    };
+  }
+  //这里是教材的代码
+  if(!Promise.allSettled) {
+    Promise.allSettled = function(promises) {
+      return Promise.all(promises.map(p => Promise.resolve(p).then(value => ({
+        state: 'fulfilled',
+        value
+      }), reason => ({
+        state: 'rejected',
+        reason
+      }))));
+    };
+  }
+#+end_src
+** Promise.race([...promise...])
+- 执行数组中所有的promise，只要有一个完成了，所有进一步的 result/error 都会被忽略。
+- resolve值是一个值，不是数组
+** Promise.resolve(value) 用结果 value 创建一个 resolved 的 promise。 
+#+begin_src js
+//等同于：
+let promise = new Promise(resolve => resolve(value));
+#+end_src
+* 微任务队列（microtask queue）
+#+begin_src js
+  let promise = Promise.reject(new Error("Promise Failed!"));
+  setTimeout(() => promise.catch(err => alert('caught')), 1000);
+
+  // Error: Promise Failed!
+  window.addEventListener('unhandledrejection', event => alert(event.reason));
+
+  //改正：让错误处理在1000ms后开始执行
+  let promise = Promise.reject(new Error("Promise Failed!"));
+  promise.catch(err => new Promise((resolve,reject) => setTimeout(() => {
+    alert('caught');
+    resolve();
+  }, 1000)));
+  window.addEventListener('unhandledrejection', event => alert(event.reason));
+
+  //如果没有在catch中return一个new Promise：
+  let promise = Promise.reject(new Error("Promise Failed!"));
+  promise.catch(err => setTimeout(() => {
+    alert('caught');
+  }, 1000));
+  window.addEventListener('unhandledrejection', event => alert(event.reason));
+
+  //也是工作的，因为catch在promise之后就被放进了微任务队列，虽然setTimeout代码处理发生在catch结束之后，但是catch结束后只要没有rethrow，就返回了一个resolve状态的promise，因为不会触发'unhandledrejection'
+#+end_src
+!!!unhandledrejection：引擎会检查 promise，如果 promise 中的任意一个出现 “rejected” 状态，unhandledrejection 事件就会被触发。
