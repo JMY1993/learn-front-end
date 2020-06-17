@@ -2946,6 +2946,10 @@ alert( a instanceof B ); // true
 #+end_src
 !!!因为instanceof操作符只关心prototype，不关心构造函数
 * mixin模式，实现类似多重继承的功能，使用Object.assign(obj,mixin)的语法
+* try...catch
+首先，执行 try {...} 中的代码。
+如果这里没有错误，则忽略 catch(err)：执行到 try 的末尾并跳过 catch 继续执行。
+如果这里出现错误，则 try 执行停止，控制流转向 catch(err) 的开头。变量 err（我们可以使用任何名称）将包含一个 error 对象，该对象包含了所发生事件的详细信息。
 * try...catch仅对运行时的错误有效，无法处理(parse-time)解析时间错误
 * try...catch同步工作，对包裹的scheduled代码无法处理
 * error对象：name，message，stack
@@ -3328,6 +3332,7 @@ Promise.allSettled(urls.map(url => fetch(url)))
       }))));
     };
   }
+//!!!p => Promise.resolve(p) 将输入值转换为 promise（以防传递了 non-promise)，这一点很重要，因为Promise.all/Promise.allSettled支持数组中有非promise的元素。
 #+end_src
 ** Promise.race([...promise...])
 - 执行数组中所有的promise，只要有一个完成了，所有进一步的 result/error 都会被忽略。
@@ -3363,3 +3368,252 @@ let promise = new Promise(resolve => resolve(value));
   //也是工作的，因为catch在promise之后就被放进了微任务队列，虽然setTimeout代码处理发生在catch结束之后，但是catch结束后只要没有rethrow，就返回了一个resolve状态的promise，因为不会触发'unhandledrejection'
 #+end_src
 !!!unhandledrejection：引擎会检查 promise，如果 promise 中的任意一个出现 “rejected” 状态，unhandledrejection 事件就会被触发。
+* Promisification
+** 定义一个双参回调的promisify
+** 定义一个多参回调的promisify
+* generator返回一个具有.next()方法的对象，这个对象是iterable的
+语法：
+#+begin_src js
+function* generatorFunc(...arg) {
+  yield value;
+  yield value;
+}
+#+end_src
+** next方法产生一个对象，具有如下格式：
+{done:true, value: "value"}
+{done:false, value: "value"}
+** 如果一个值是由return（而不是yield）产生的，这个值的done属性就是true，反之false
+** generator对象迭代的时候，done:false属性对应的value会被忽略
+* Generator 组合（composition）是将一个 generator 流插入到另一个 generator 流的自然的方式。它不需要使用额外的内存来存储中间结果。
+下面的代码定义了两个generator，第一个是产生数字序列的
+第二个generator根据数字序列产生string
+
+可以观察到有三个for循环，产生不同区间的数字
+这三个for循环每个都是可以用另一generator产生的
+
+generator组合的语法是：
+~yield* generator;~
+#+begin_src js
+function* generateSequence(start, end) {
+  for (let i = start; i <= end; i++) yield i;
+}
+
+function* generateAlphaNum() {
+
+  // yield* generateSequence(48, 57);
+  for (let i = 48; i <= 57; i++) yield i;
+
+  // yield* generateSequence(65, 90);
+  for (let i = 65; i <= 90; i++) yield i;
+
+  // yield* generateSequence(97, 122);
+  for (let i = 97; i <= 122; i++) yield i;
+
+}
+
+let str = '';
+
+for(let code of generateAlphaNum()) {
+  str += String.fromCharCode(code);
+}
+
+alert(str); // 0..9A..Za..z
+#+end_src
+* yield是双向的
+#+begin_src js
+  function* generateWithTag(from, to) {
+    for (let i = from; i <= to; i++) {
+      let tag = yield i;                      //(1)
+      console.log(`${tag} [now i = ${i}]`);   //(2)
+    }
+  }
+
+  let generator = generateWithTag(1, 5);
+  generator.next("init generator, i shall be 1");            //r1
+  generator.next("first call, shall follow with 2").value;   //r2
+  generator.next("second call, shall follow with 3").value;  //r3
+  generator.next("third call, shall follow with 4").value;   //r4
+  generator.next("fourth call, shall follow with 5").value;  //r5
+  generator.next("fifth call, shall follow with true").done; //r6
+#+end_src
+代码运行分析：
+共调用了六次next。
+r1: 1- yield 1 停在（1）等待给tag值；
+    2- 返回结果1
+    此时i=1;
+r2: 1- 给tag值 first call
+    2- 执行console.log，这里输出的是firstcall，但i没变，还是1
+    3- 第一个循环结束，i=2;
+    4- yield 2，停在（1）等待给tag值；
+...
+r6
+
+可以看到一个问题：首次循环中yield下面的内容是在第二次yield时执行的
+也就是说，每次循环中的其它代码是在其后一次next中执行的
+
+如果我们把yield赋值的等号看成一个分界线：
+let [1.下次next赋值] = yield [2.本次的结果]；
+3.其它代码1
+4.其它代码2
+
+执行的顺序是2134
+
+* generator.throw()
+#+begin_src js
+function* gen() {
+  try {
+    let result = yield "2 + 2 = ?"; // (1)
+
+    alert("The execution does not reach here, because the exception is thrown above");
+  } catch(e) {
+    alert(e); // 显示这个 error
+  }
+}
+
+let generator = gen();
+
+let question = generator.next().value;
+
+generator.throw(new Error("The answer is not found in my database")); // (2)
+#+end_src
+
+上面的error被抛到（1）行的yield，然后被下面的catch接住。如果没有接住，（2）行作为调用代码就会出现异常（generator中的error掉出到调用代码中）。
+
+如果error掉出，可以在掉出代码中处理：
+
+#+begin_src js
+function* generate() {
+  let result = yield "2 + 2 = ?"; // 这行出现 error
+}
+
+let generator = generate();
+
+let question = generator.next().value;
+
+try {
+  generator.throw(new Error("The answer is not found in my database"));
+} catch(e) {
+  alert(e); // 显示这个 error
+}
+#+end_src
+
+如果掉出的error没有被接住（没有得到处理），会杀死脚本
+* 异步迭代
+同步迭代和异步迭代的异同：
+|                   | Iterator        | Async Iterator       |
+|-------------------+-----------------+----------------------|
+| iterator method   | Symbol.iterator | Symbol.asyncIterator |
+| return or next()  | any             | Promise              |
+| ~for loop~ operator | for...of        | for await...of       |
+
+例子：
+#+begin_src js
+let range = {
+  from: 1,
+  to: 5,
+
+  // 在刚使用 for await..of 循环时，for await..of 就会调用一次这个方法
+  [Symbol.asyncIterator]() { // (1)
+    // ...它返回 iterator object：
+    // 后续的操作中，for await..of 将只针对这个对象
+    // 并使用 next() 向它请求下一个值
+    return {
+      current: this.from,
+      last: this.to,
+
+      // for await..of 循环在每次迭代时都会调用 next()
+      async next() { // (2)
+        // 它应该以对象 {done:.., value :...} 的形式返回值
+        // (会被 async 自动包装成一个 promise)
+
+        // 可以在内部使用 await，执行异步任务：
+        await new Promise(resolve => setTimeout(resolve, 1000)); // (3)
+
+        if (this.current <= this.last) {
+          return { done: false, value: this.current++ };
+        } else {
+          return { done: true };
+        }
+      }
+    };
+  }
+};
+
+(async () => {
+
+  for await (let value of range) { // (4)
+    alert(value); // 1,2,3,4,5
+  }
+
+})()
+#+end_src
+** !!!spread语法无法异步工作
+~alert([...range]);~ //Error, no Symbol.iterator
+因为spread语法需要Symbol.iterator，但是上面例子定义的range只有Symbol.asyncIterator
+** !!!async generator
+语法：
+1. async function* generateSequence(start, end) {}
+2. async generator定义函数内部可以使用await；
+3. 遍历async generator时，使用 ~for await...of~ 结构
+4. !!!async generator的next方法返回的是promise，意味着调用 ~await asyncGenerator.next()~ 时，前面要加 ~await~ 关键字（或者也可以用then）
+** !!!async iterable
+*** 同步/异步 iterable 的generator定义
+1. 普通generator定义可迭代对象的Symbol.iterator
+注意[Symbol.iterator]前面的星号
+#+begin_src js
+let range = {
+  from: 1,
+  to: 5,
+
+  *[Symbol.iterator]() { // [Symbol.iterator]: function*() 的简写形式
+    for(let value = this.from; value <= this.to; value++) {
+      yield value;
+    }
+  }
+};
+
+for(let value of range) {
+  alert(value); // 1，然后 2，然后 3，然后 4，然后 5
+#+end_src
+2. 异步（async）generator定义可迭代对象
+首先使用Symbol.asyncIterator
+其次注意Symbol.asyncIterator前面的星号
+!!!星号代表是一个generator，asyncIterator代表是一个异步迭代器方法
+#+begin_src js
+let range = {
+  from: 1,
+  to: 5,
+
+  async *[Symbol.asyncIterator]() { // 等价于 [Symbol.asyncIterator]: async function*()
+    for(let value = this.from; value <= this.to; value++) {
+
+      // 在 value 之间暂停一会儿，等待一些东西
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      yield value;
+    }
+  }
+};
+
+(async () => {
+
+  for await (let value of range) {
+    alert(value); // 1，然后 2，然后 3，然后 4，然后 5
+  }
+
+})();
+#+end_src
+** 总结异步迭代
+迭代有iterable对西那个和generator两种
+* iterable和async iterable
+|                        | iterable                     | async iterable                                 |
+|------------------------+------------------------------+------------------------------------------------|
+| 提供iterator的对象方法 | Symbol.iterator              | Symbol.asyncIterator                           |
+| next() 的返沪值        | {value:..., done:true/false} | resolve成{value:..., done:true/false}的promise |
+
+* generator和async generator
+|                | generator                    | async generator                                |
+|----------------+------------------------------+------------------------------------------------|
+| 声明方式       | function*                    | async function*                                |
+| next()的返回值 | {value:..., done:true/false} | resolve成{value:..., done:true/false}的promise |
+
