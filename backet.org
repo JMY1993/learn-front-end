@@ -3616,4 +3616,86 @@ let range = {
 |----------------+------------------------------+------------------------------------------------|
 | 声明方式       | function*                    | async function*                                |
 | next()的返回值 | {value:..., done:true/false} | resolve成{value:..., done:true/false}的promise |
+* 模块基础知识
+** 语言级的模块系统从ES6开始支持
+之前版本的模块由：
+AMD
+CommonJS
+UMD
+等库提供
+** 模块的载体：一个文件就是一个模块，一个脚本就是一个模块
+** 关键字
+*** export标记了可以从外部访问的关键字和变量
+*** import允许从其它模块导入功能
+一个例子：
+#+begin_src js
+  // 📁 sayHi.js
+  export function sayHi(user) {
+    alert(`Hello, ${user}!`);
+  }
 
+  // 📁 main.js
+  import {sayHi} from './sayHi.js';
+
+  alert(sayHi); // function...
+  sayHi('John'); // Hello, John!
+#+end_src
+** 模块始终使用'use strict'
+** 每个模块都有自己的顶级作用域(top-level scope)
+** <script type="module">是嵌入模块的标签
+** 模块代码仅在第一次被导入的时候解析
+模块只被执行一次。生成导出，然后它被分享给所有对其的导入，所以如果某个地方修改了 admin 对象，其他的模块也能看到这个修改。
+
+这种行为让我们可以在首次导入时 设置 模块。我们只需要设置其属性一次，然后在进一步的导入中就都可以直接使用了。
+** import.meta包含关于当前模块的信息
+在浏览器环境中，它包含当前脚本的 URL，或者如果它是在 HTML 中的话，则包含当前页面的 URL。
+** 在一个模块中， ~this~ 是 ~undefined~
+** 模块脚本是延迟的
+- 下载外部模块脚本 <script type="module" src="..."> 不会阻塞 HTML 的处理，它们会与其他资源并行加载。
+- 模块脚本会等到 HTML 文档完全准备就绪（即使它们很小并且比 HTML 加载速度更快），然后才会运行。
+- 保持脚本的相对顺序：在文档中排在前面的脚本先执行。
+** 浏览器不允许裸模块，即没有任何路径的模块
+** 兼容性：使用 ~<script nomodule>~ 标签，提供后备
+** 一个模块就是一个文件。浏览器需要使用 <script type="module" src=""> 以使 import/export 可以工作。模块相较于常规脚本有几点差别：
+- 默认是延迟解析的（deferred）。
+- Async 可用于内联脚本。
+- 要从另一个源（域/协议/端口）加载外部脚本，需要 CORS header。
+- 重复的外部脚本会被忽略(具有相同 src 的外部脚本仅运行一次)
+#+begin_src html
+<!-- 脚本 my.js 被加载完成（fetched）并只被运行一次 -->
+<script type="module" src="my.js"></script>
+<script type="module" src="my.js"></script>
+#+end_src
+* 模块的导入和导出
+所有 import/export 类型自查：
+- 导出：
+  - 在声明一个 class/function/… 之前：
+    + export [default] class/function/variable ...
+  - 独立的导出：
+    + export {x [as y], ...}.
+  - 重新导出：
+    + export {x [as y], ...} from "module"
+    + export * from "module"（不会重新导出默认的导出）。
+    + export {default [as y]} from "module"（重新导出默认的导出）。
+- 导入：
+  - 模块中命名的导出：
+    + import {x [as y], ...} from "module"
+  - 默认的导出：
+    + import x from "module"
+    + import {default as x} from "module"
+  - 所有：
+    + import * as obj from "module"
+  - 导入模块（它的代码，并运行），但不要将其赋值给变量：
+    + import "module"
+** !!!在 ~{...}~ 中的导出无效。
+如下有条件的导出是无效的：
+#+begin_src js
+if (something) {
+  import {sayHi} from "./say.js"; // Error: import must be at top level
+}
+#+end_src
+** 动态导入import(modulePath)，返回一个resolve为所有导出对象的的obj。（modulePath是模块路径的string）
+*** 动态导入可以在代码中的任意位置动态地使用（静态导入不能直接做赋值等操作）
+*** 动态导入在常规脚本中工作时，它们不需要 script type="module"
+*** 尽管 import() 看起来像一个函数调用，但它只是一种特殊语法，只是恰好使用了括号（类似于 super()）
+*** !!!因此不能将 ~import~ 复制到一个变量中，或者对其使用 call/apply。因为它不是一个函数。
