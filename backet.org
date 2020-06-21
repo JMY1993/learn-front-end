@@ -3699,3 +3699,64 @@ if (something) {
 *** 动态导入在常规脚本中工作时，它们不需要 script type="module"
 *** 尽管 import() 看起来像一个函数调用，但它只是一种特殊语法，只是恰好使用了括号（类似于 super()）
 *** !!!因此不能将 ~import~ 复制到一个变量中，或者对其使用 call/apply。因为它不是一个函数。
+* Proxy
+** 保护内部属性
+** Proxy与继承
+** 内建对象的内部插槽(internal slot)
+*** 私有字段
+** 可撤销的proxy
+** 几个例子：
+*** !!!Proxy方法的参数中，prop是字符串：
+#+begin_src js
+let array = [1, 2, 3];
+
+array = new Proxy(array, {
+  get(target, prop, receiver) {
+    if (prop < 0) {
+      // 即使我们像 arr[1] 这样访问它
+      // prop 是一个字符串，所以我们需要将其转换成数字
+      prop = +prop + target.length;
+    }
+    return Reflect.get(target, prop, receiver);
+  }
+});
+
+
+alert(array[-1]); // 3
+alert(array[-2]); // 2
+#+end_src
+*** 可观察的对象属性
+#+begin_src js
+  let handlers = Symbol('handlers');
+
+  function makeObservable(target) {
+    // 1. 初始化 handler 存储
+    target[handlers] = [];
+
+    // 将 handler 函数存储到数组中，以便于之后调用
+    target.observe = function(handler) {
+      this[handlers].push(handler);
+    };
+
+    // 2. 创建一个 proxy 以处理更改
+    return new Proxy(target, {
+      set(target, property, value, receiver) {
+        let success = Reflect.set(...arguments); // 将操作转发给对象
+        if (success) { // 如果在设置属性时没有出现 error
+          // 调用所有 handler
+          target[handlers].forEach(handler => handler(property, value));
+        }
+        return success;
+      }
+    });
+  }
+
+  let user = {};
+  user = makeObservable(user);
+
+  user.observe((key, value) => {
+    alert(`SET ${key}=${value}`);
+  });
+
+  user.name = "John"; // alerts: SET name=John
+#+end_src
